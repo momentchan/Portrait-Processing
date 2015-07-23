@@ -1,0 +1,71 @@
+﻿Build started 2015/5/26 下午 03:30:31.
+     1>Project "C:\Users\iCeiRA\Desktop\MJ\Portrait Processing\Portrait Processing\Portrait Processing.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\opencv\build\x86\vc12\..\..\include /Zi /nologo /W3 /WX- /sdl /O2 /Oi /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Release\\" /Fd"x64\Release\vc120.pdb" /Gd /TP /errorReport:prompt Binarization.cpp ContourExtraction.cpp FaceDetection.cpp Main.cpp Refinement.cpp Simulation.cpp Utility.cpp
+         Binarization.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>Binarization.cpp(11): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
+     1>Binarization.cpp(36): warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+     1>Binarization.cpp(61): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+         ContourExtraction.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>ContourExtraction.cpp(63): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+         FaceDetection.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>FaceDetection.cpp(52): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>FaceDetection.cpp(53): warning C4244: 'argument' : conversion from 'double' to 'int', possible loss of data
+     1>FaceDetection.cpp(64): warning C4553: '==' : operator has no effect; did you intend '='?
+         Main.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>Main.cpp(17): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>Main.cpp(22): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>Main.cpp(66): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Main.cpp(67): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Main.cpp(68): warning C4244: 'argument' : conversion from 'float' to 'int', possible loss of data
+         Refinement.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+         Simulation.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>Simulation.cpp(56): warning C4244: 'initializing' : conversion from 'double' to 'unsigned char', possible loss of data
+     1>Simulation.cpp(57): warning C4244: 'initializing' : conversion from 'double' to 'unsigned char', possible loss of data
+     1>Simulation.cpp(58): warning C4244: 'initializing' : conversion from 'double' to 'unsigned char', possible loss of data
+     1>Simulation.cpp(96): warning C4244: 'initializing' : conversion from 'int' to 'float', possible loss of data
+     1>Simulation.cpp(97): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>Simulation.cpp(102): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
+         Utility.cpp
+     1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>Utility.cpp(22): warning C4244: 'initializing' : conversion from 'unsigned __int64' to 'double', possible loss of data
+     1>Utility.cpp(23): warning C4244: 'initializing' : conversion from 'unsigned __int64' to 'double', possible loss of data
+     1>Utility.cpp(84): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
+     1>Utility.cpp(131): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
+     1>Utility.cpp(137): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>Utility.cpp(145): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
+     1>Utility.cpp(189): warning C4309: '=' : truncation of constant value
+       Link:
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\iCeiRA\Desktop\MJ\Portrait Processing\x64\Release\Portrait Processing.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\opencv\build\x86\vc12\lib opencv_ts300.lib opencv_world300.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\iCeiRA\Desktop\MJ\Portrait Processing\x64\Release\Portrait Processing.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\iCeiRA\Desktop\MJ\Portrait Processing\x64\Release\Portrait Processing.lib" /MACHINE:X64 x64\Release\Binarization.obj
+         x64\Release\ContourExtraction.obj
+         x64\Release\FaceDetection.obj
+         x64\Release\Main.obj
+         x64\Release\Refinement.obj
+         x64\Release\Simulation.obj
+         x64\Release\Utility.obj
+     1>opencv_world300.lib(opencv_world300.dll) : fatal error LNK1112: module machine type 'X86' conflicts with target machine type 'x64'
+     1>Done Building Project "C:\Users\iCeiRA\Desktop\MJ\Portrait Processing\Portrait Processing\Portrait Processing.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:06.53
