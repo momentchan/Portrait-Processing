@@ -1,30 +1,26 @@
-﻿Build started 2015/7/23 下午 05:33:43.
+﻿Build started 2015/7/28 下午 12:13:36.
      1>Project "C:\Users\Fred\Dropbox\Portrait-Processing\Portrait Processing\Portrait Processing.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\opencv\build\x64\vc12\..\..\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt ContourExtraction.cpp
-         ContourExtraction.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\opencv\build\x64\vc12\..\..\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt Main.cpp
+         Main.cpp
      1>C:\opencv\build\include\opencv2/core/mat.hpp(1413): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
-     1>ContourExtraction.cpp(21): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>ContourExtraction.cpp(234): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+     1>Main.cpp(65): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
+     1>Main.cpp(150): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>Main.cpp(152): warning C4305: 'argument' : truncation from 'double' to 'float'
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\opencv\build\x64\vc12\lib opencv_ts300d.lib opencv_world300d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.lib" /MACHINE:X64 x64\Debug\Binarization.obj
          x64\Debug\CoherentLineDrawing.obj
          x64\Debug\ContourExtraction.obj
-         x64\Debug\CuntourSmoothing.obj
          x64\Debug\FaceDetection.obj
          x64\Debug\Main.obj
+         x64\Debug\MeanShift.obj
          x64\Debug\Refinement.obj
          x64\Debug\Separation.obj
          x64\Debug\Simulation.obj
          x64\Debug\Utility.obj
-     1>ContourExtraction.obj : error LNK2005: "public: void __cdecl Smootour::init(int,int,float)" (?init@Smootour@@QEAAXHHM@Z) already defined in CuntourSmoothing.obj
-     1>ContourExtraction.obj : error LNK2005: "public: __cdecl Smootour::Smootour(int,int,float)" (??0Smootour@@QEAA@HHM@Z) already defined in CuntourSmoothing.obj
-     1>ContourExtraction.obj : error LNK2005: "public: void __cdecl Smootour::update(class cv::Mat)" (?update@Smootour@@QEAAXVMat@cv@@@Z) already defined in CuntourSmoothing.obj
-     1>ContourExtraction.obj : error LNK2005: "public: class std::vector<class std::vector<class cv::Point_<int>,class std::allocator<class cv::Point_<int> > >,class std::allocator<class std::vector<class cv::Point_<int>,class std::allocator<class cv::Point_<int> > > > > __cdecl Smootour::get_contours(void)" (?get_contours@Smootour@@QEAA?AV?$vector@V?$vector@V?$Point_@H@cv@@V?$allocator@V?$Point_@H@cv@@@std@@@std@@V?$allocator@V?$vector@V?$Point_@H@cv@@V?$allocator@V?$Point_@H@cv@@@std@@@std@@@2@@std@@XZ) already defined in CuntourSmoothing.obj
-     1>ContourExtraction.obj : error LNK2005: "public: class cv::Mat __cdecl Smootour::get_implicit_image(void)" (?get_implicit_image@Smootour@@QEAA?AVMat@cv@@XZ) already defined in CuntourSmoothing.obj
-     1>C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.exe : fatal error LNK1169: one or more multiply defined symbols found
-     1>Done Building Project "C:\Users\Fred\Dropbox\Portrait-Processing\Portrait Processing\Portrait Processing.vcxproj" (Build target(s)) -- FAILED.
+         Portrait Processing.vcxproj -> C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.exe
+     1>Done Building Project "C:\Users\Fred\Dropbox\Portrait-Processing\Portrait Processing\Portrait Processing.vcxproj" (Build target(s)).
 
-Build FAILED.
+Build succeeded.
 
-Time Elapsed 00:00:03.51
+Time Elapsed 00:00:03.31

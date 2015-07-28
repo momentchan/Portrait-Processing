@@ -1,0 +1,69 @@
+This set of files contain codes for B-Spline based curve evolution as
+implemented by David Rogers[2]. OpenCV is required. I have followed the C-style of
+programming; hope to make a C++ version as soon as I plumb its depths!
+The following directories are available. 
+src/ : contains the source files 
+include/ : Contains the header file bspline.h
+lib/: compiled library
+doc/: currently incomplete.
+example/ : bsplineUsage.cpp, gradientSegmentation.cpp some sample code.
+
+Bugs or feedback can be sent to me at v.srikrishnan@gmail.com . Note that some
+basic B-Spline code has been modified from [4]. If you use the code
+useful, please cite [1].
+################################################
+Quick Usage:
+Go to the examples directory and type make. Run the file gradientSegmentation
+or bsplineUsage as per taste. Please change the TARGET to the either
+of these to generate the executables. 
+
+I tried to create Visual Studio solution but it was too annoying. Windows lovers must create the solutions
+themselves. I hope that the way i have structured the directory helps.
+
+#################################
+A brief description of the "library" and the background.
+
+The basic idea behind the code is to make available a set of codes for parametric implementation of active contours. OpenCV does it to some 
+extent. However, it uses a multi-point representation and the problem of point bunching and spacing happens. For my PhD thesis, I have used 
+B-Splines for their utilities. Again, the idea behind making the code public is to remove some pain of implementation for researchers who 
+want to use active contours. The idea is to let the user concentrate on defining and implementing whatever energy term he wants to rather 
+than sit and solve the parameterisation issues associated with parametric active contours. I have tried to define the function calls as easy 
+as possible from user point of view. 
+
+To make the best use of the functions, a bit of background will be helpful. The force moving the contour can be divided into tangential and 
+normal components. As explained in [1], the tangential term re-parametrises the curve and the normal component changes or controls the curve 
+shape. In [1], we have defined a tangential term which depends on the normal term, to maintain uniform point distance. Therefore, the user 
+need only define and pass the external energy term to the function implementing the curve evolution. Since the normal term is defined by the 
+user, the tangential term is automatically calculated and included in evolution. This implicit addition of tangential term is of course an 
+optional "feature". People wanting to use just the base evolution can set some parameter for that.
+############################################
+Design of the library:
+B-Splines are defined as a linear combination of basis functions, where the shape of the curve depends on the "Weights" or control points. I 
+have created simple data structures for holding the basis and bspline information. Reason is that the same basis function can be shared by 
+multiple curves if need be. In case of multiple curves sharing the same basis, there is a counter for maintaining reference counts. 
+Therefore, even if the "original" curve is released/freed, the basis it used could still exist and be used by other curves. Therefore, in 
+most cases, the user is encouraged not to "set" the basis function unless he has seen and understood the basic DS. Actually, there should be no need to do that, I hope!
+
+ToDo
+1. Implement open curve evolution: depends on public demand ;-)
+2. Implement a sample region based evolution. Is internally ready but again
+will be made available on demand!
+
+References
+
+[1] Srikrishnan, V.; Chaudhuri, S., "Stabilization of Parametric Active Contours Using a Tangential Redistribution Term"
+Image Processing, IEEE Transactions on Volume 18,  Issue 8,  Aug. 2009 Page(s):1859 - 1872 
+@article{1657354,
+ author = {Srikrishnan, V. and Chaudhuri, Subhasis},
+ title = {Stabilization of parametric active contours using a tangential redistribution term},
+ journal = {Trans. Img. Proc.},
+ volume = {18},
+ number = {8},
+ year = {2009},
+ issn = {1057-7149},
+ pages = {1859--1872},
+ doi = {http://dx.doi.org/10.1109/TIP.2009.2021310},
+ publisher = {IEEE Press},
+ address = {Piscataway, NJ, USA},
+ }
+[2]http://www.nar-associates.com/nurbs/c_code.html

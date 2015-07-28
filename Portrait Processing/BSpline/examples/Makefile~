@@ -1,0 +1,40 @@
+# Sample makefile created by hand. Use cmake or autotools next?
+CPP=g++
+BSPLINE_INCLUDE=$(PWD)/../include
+STD_INCLUDE=/usr/local/include/opencv
+INCLUDE=-I $(STD_INCLUDE) -I $(BSPLINE_INCLUDE)
+LIBS=$(STD_LIBS) $(BSPLINE_LIBS)
+SRC_PATH=$(PWD)/../src
+LIB_PATH=$(PWD)/../lib
+DEPS=$(LIB_PATH)/bsplineInit.o $(LIB_PATH)/bsplineUtils.o $(LIB_PATH)/bsplineDBasis.o $(LIB_PATH)/bsplineApprox.o $(LIB_PATH)/bsplineParam.o $(LIB_PATH)/bsplineBasis.o $(LIB_PATH)/bsplineEvolve.o $(LIB_PATH)/tangentTerm.o $(LIB_PATH)/ginput.o 
+LIBS= -lcv -lhighgui
+TARGET=bsplineUsage
+#gradientSegmentation
+CCFLAGS= -Wall  -fPIC -g # -O3 -pipe -funroll-loops -fomit-frame-pointer -march=native -fPIC
+
+$(TARGET): $(TARGET).cpp $(LIB_PATH)/libBSpline.so $(BSPLINE_INCLUDE)/bspline.h gradientForce.o
+	$(CPP) $(INCLUDE) $(CCFLAGS) $(TARGET).cpp $(LIB_PATH)/libBSpline.so $(LIBS) gradientForce.o -o $(TARGET)
+$(LIB_PATH)/libBSpline.so:$(DEPS)
+	$(CPP) -shared -fPIC -o $(LIB_PATH)/libBSpline.so $(DEPS) 
+$(LIB_PATH)/bsplineInit.o:$(SRC_PATH)/bsplineInit.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineInit.cpp -o $(LIB_PATH)/bsplineInit.o
+$(LIB_PATH)/bsplineUtils.o:$(SRC_PATH)/bsplineUtils.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineUtils.cpp -o $(LIB_PATH)/bsplineUtils.o
+$(LIB_PATH)/bsplineDBasis.o:$(SRC_PATH)/bsplineDBasis.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineDBasis.cpp -o $(LIB_PATH)/bsplineDBasis.o
+$(LIB_PATH)/bsplineApprox.o:$(SRC_PATH)/bsplineApprox.cpp
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineApprox.cpp -o $(LIB_PATH)/bsplineApprox.o
+$(LIB_PATH)/bsplineParam.o:$(SRC_PATH)/bsplineParam.cpp $(LIB_PATH)/bsplineBasis.o
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineParam.cpp -o $(LIB_PATH)/bsplineParam.o
+$(LIB_PATH)/bsplineBasis.o:$(SRC_PATH)/bsplineBasis.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineBasis.cpp -o $(LIB_PATH)/bsplineBasis.o
+$(LIB_PATH)/bsplineEvolve.o:$(SRC_PATH)/bsplineEvolve.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/bsplineEvolve.cpp -o $(LIB_PATH)/bsplineEvolve.o
+$(LIB_PATH)/tangentTerm.o:$(SRC_PATH)/tangentTerm.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/tangentTerm.cpp -o $(LIB_PATH)/tangentTerm.o
+$(LIB_PATH)/ginput.o:$(SRC_PATH)/ginput.cpp $(BSPLINE_INCLUDE)/bspline.h
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c $(SRC_PATH)/ginput.cpp -o $(LIB_PATH)/ginput.o
+gradientForce.o:gradientForce.cpp
+	$(CPP) $(INCLUDE) $(CCFLAGS) -c gradientForce.cpp -o gradientForce.o
+clean:
+	rm -f $(TARGET) $(DEPS)

@@ -3,7 +3,6 @@
 #include "ETF.h"
 #include "fdog.h"
 #include "myvec.h"
-#include "smootour.h"
 
 extern Mat R2;
 extern Mat sketchContours;
@@ -30,6 +29,46 @@ void ContourExtraction(){
 	CannyThreshold(0, 0);
 	waitKey(0);
 	destroyAllWindows();
+}
+void  Bspline(vector<Point> &pointSet){
+	vector <Point> spline;
+	cout << pointSet.size() << " ";
+
+	// pick up controls points
+
+
+	for (int i = 3; i < pointSet.size(); i=i+5)
+	{
+		Point p1 = pointSet[i-3];
+		Point p2 = pointSet[i-2];
+		Point p3 = pointSet[i-1];
+		Point p4 = pointSet[i];
+
+		int divisions = sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2));
+		//cout << divisions << endl;
+		double a[5];
+		double b[5];
+		a[0] = (-p1.x + 3 * p2.x - 3 * p3.x + p4.x) / 6.0;
+		a[1] = (3 * p1.x - 6 * p2.x + 3 * p3.x) / 6.0;
+		a[2] = (-3 * p1.x + 3 * p3.x) / 6.0;
+		a[3] = (p1.x + 4 * p2.x + p3.x) / 6.0;
+		b[0] = (-p1.y + 3 * p2.y - 3 * p3.y + p4.y) / 6.0;
+		b[1] = (3 * p1.y - 6 * p2.y + 3 * p3.y) / 6.0;
+		b[2] = (-3 * p1.y + 3 * p3.y) / 6.0;
+		b[3] = (p1.y + 4 * p2.y + p3.y) / 6.0;
+
+		spline.push_back(Point(a[3], b[3]));
+		for (i = 1; i <= divisions - 1; i++)
+		{
+			float  t = float(i) / float(divisions);
+			//cout<<t<<endl;
+			spline.push_back(Point((a[2] + t * (a[1] + t * a[0]))*t + a[3], (b[2] + t * (b[1] + t * b[0]))*t + b[3]));
+		}
+		
+	}
+	pointSet.clear();
+	pointSet = spline;
+	cout << pointSet.size() << endl;
 }
 
 void CoherentLine(Mat src, Mat & dst, double thres){
@@ -190,6 +229,26 @@ void thinning(const cv::Mat& src, cv::Mat& dst)
 	dst *= 255;
 }
 
+void BranchPointRemoval(Mat &src){
+	int removePoint = 0;
+	for (int i = 1; i < src.rows-1; i++)
+		for (int j = 1; j < src.cols-1; j++){
+			if ((int)src.at<uchar>(i, j)==255){
+				int count = 0;
+				for (int k = -1; k <= 1; k++){
+					for (int l = -1; l <= 1; l++){
+						if ((int)src.at<uchar>(i + k, j + l) == 255)
+							count++;
+					}
+				}
+				if (count>4){
+					src.at<uchar>(i, j) = (uchar)0;
+					removePoint += count;
+				}
+			}
+		}
+		cout << "removePoint: " << removePoint << endl;
+}
 void CannyThreshold(int, void*){
 	
 
@@ -204,7 +263,7 @@ void CannyThreshold(int, void*){
 
 	// Detect edges using Coherent Line
 	CoherentLine(R2, Edges, low_threshold*0.1);
-	
+
 	// Find contours
 	Mat EdgesBinary;
 	threshold(Edges, EdgesBinary, 200, 255, CV_THRESH_BINARY_INV);
@@ -212,13 +271,34 @@ void CannyThreshold(int, void*){
 	//imshow("EdgesBinary", EdgesBinary);
 
 	thinning(EdgesBinary, EdgesBinary);
-	//imshow("EdgesBinary", EdgesBinary);
+	//imshow("EdgesBinary", EdgesBinary); waitKey(0);
+	BranchPointRemoval(EdgesBinary);
+
 
 	findContours(EdgesBinary, detectedContours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0));
+	
 
 
 
+	for (size_t k = 0; k < detectedContours.size(); k++){
+		//cout << detectedContours[k].size() << " ";
+		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 2, false);
+		//cout << detectedContours[k].size() << endl;
+		if (detectedContours[k].size()>4){
+			//cout<<k<<endl;
+		//	Bspline(detectedContours[k]);
+		}
+	}
+	
+	/*vector<vector<Point> > smoothContours(detectedContours.size());
+	for (size_t k = 0; k < detectedContours.size(); k++){
+		approxPolyDP(Mat(detectedContours[k]), smoothContours[k], 2, false);
+		cout << detectedContours[k].size() << " " << smoothContours[k].size() << endl;
+	}*/
+	
 
+
+	
 
 	// Get the moments
 	vector<Moments> mu(detectedContours.size());
@@ -253,6 +333,9 @@ void CannyThreshold(int, void*){
 			drawContours(sketchContours, detectedContours, i, Scalar(0, 0, 0), 2, 8, hierarchy, 2, Point());
 		}
 	}
+
+
+
 
 	cout << "Number of Edges before filtering : " << detectedContours.size() << endl;
 	cout << "Number of Edges after filtering : " << filteredContours.size() << endl << endl;

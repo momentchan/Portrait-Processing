@@ -3,7 +3,7 @@
 extern Mat R2;
 extern Mat refineImage;
 extern vector<vector<Point> > filteredContours;
-
+extern Mat cartoon;
 Mat simulation;
 vector < vector<Point2i > > blobs;
 vector<Rect> boundRects;
@@ -12,7 +12,7 @@ bool turn = false;
 
 void DrawSimulation(){
 	SketchSimulation();
-	FillSimulation();
+	//FillSimulation();
 }
 void SketchSimulation(){
 	sort(filteredContours.begin(), filteredContours.end(), CompareLength);
@@ -27,12 +27,16 @@ void SketchSimulation(){
 
 		for (int j = 0; j < filteredContours[i].size()-1; j++){
 		//for (int j = 0; j < filteredContours[i].size() * 1 / 2; j++){
-			outputFile << filteredContours[i][j] << endl;
-			line(simulation, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
+			outputFile << filteredContours[i][j].x << " " << filteredContours[i][j].y << endl;
+			
+			line(cartoon, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
+			//line(simulation, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
 			//circle(simulation, filteredContours[i][j], 1, Scalar(0, 0, 0), 0, CV_AA);
-			imshow("Drawing Simulation", simulation);
-			cvWaitKey(5);
+			//imshow("Drawing Simulation", simulation);
+			imshow("Drawing Simulation", cartoon);
+			cvWaitKey(10);
 		}
+		//cvWaitKey(0);
 		outputFile.close();
 	}
 	cvWaitKey(0);

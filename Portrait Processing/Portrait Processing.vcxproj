@@ -162,9 +162,9 @@
     <ClCompile Include="Binarization.cpp" />
     <ClCompile Include="CoherentLineDrawing.cpp" />
     <ClCompile Include="ContourExtraction.cpp" />
-    <ClCompile Include="CuntourSmoothing.cpp" />
     <ClCompile Include="FaceDetection.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MeanShift.cpp" />
     <ClCompile Include="Refinement.cpp" />
     <ClCompile Include="Separation.cpp" />
     <ClCompile Include="Simulation.cpp" />
@@ -176,6 +176,7 @@
     <ClInclude Include="FuncDeclaration.h" />
     <ClInclude Include="imatrix.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="MeanShift.h" />
     <ClInclude Include="myvec.h" />
     <ClInclude Include="smootour-master\smootour.h" />
   </ItemGroup>
