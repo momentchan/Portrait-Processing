@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="Binarization.cpp" />
     <ClCompile Include="CoherentLineDrawing.cpp" />
+    <ClCompile Include="ColorSeparation.cpp" />
     <ClCompile Include="ContourExtraction.cpp" />
     <ClCompile Include="FaceDetection.cpp" />
     <ClCompile Include="Main.cpp" />

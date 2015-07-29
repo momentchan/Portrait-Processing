@@ -3,7 +3,7 @@
 extern Mat R2;
 extern Mat refineImage;
 extern vector<vector<Point> > filteredContours;
-extern Mat cartoon;
+extern Mat colorSegment;
 Mat simulation;
 vector < vector<Point2i > > blobs;
 vector<Rect> boundRects;
@@ -29,11 +29,11 @@ void SketchSimulation(){
 		//for (int j = 0; j < filteredContours[i].size() * 1 / 2; j++){
 			outputFile << filteredContours[i][j].x << " " << filteredContours[i][j].y << endl;
 			
-			line(cartoon, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
+			line(colorSegment, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
 			//line(simulation, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
 			//circle(simulation, filteredContours[i][j], 1, Scalar(0, 0, 0), 0, CV_AA);
 			//imshow("Drawing Simulation", simulation);
-			imshow("Drawing Simulation", cartoon);
+			imshow("Drawing Simulation", colorSegment);
 			cvWaitKey(10);
 		}
 		//cvWaitKey(0);
