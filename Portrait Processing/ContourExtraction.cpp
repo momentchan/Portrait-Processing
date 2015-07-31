@@ -4,23 +4,21 @@
 #include "fdog.h"
 #include "myvec.h"
 
-extern Mat R2;
-extern Mat sketchContours;
+
+extern Mat grayImg;
 extern bool contourShow;
 extern vector<vector<Point> > filteredContours;
-extern Point2f center;
-int low_threshold = 3;//92; //canny threshold
-int max_threshold = 10;//150;
+extern Point2f faceCenter;
+
+int low_threshold = 3; //92; //canny threshold
+int max_threshold = 10; //150;
 int ratio = 2;
 int kernel_size = 3;
-//float Ts = 0.1;
 int Ts = 1;
 
-float MWCalculation(Moments mu, Point2f mc){
-	return mu.m00 / norm(Mat(mc), Mat(center));
-}
+
 void ContourExtraction(){
-	cout << "Extraction contour..." << endl;
+	cout << "Extracting contours..." << endl;
 	if (contourShow){
 		namedWindow("Original Contours", CV_WINDOW_AUTOSIZE);
 		createTrackbar("Contour Threshold:", "Original Contours", &low_threshold, max_threshold, CannyThreshold);
@@ -30,6 +28,95 @@ void ContourExtraction(){
 	waitKey(0);
 	destroyAllWindows();
 }
+
+void CannyThreshold(int, void*){
+
+	vector<vector<Point> > detectedContours;
+	vector<Vec4i> hierarchy;
+	Mat edges = Mat::zeros(grayImg.size(), CV_8UC1);
+
+	// Detect edges using canny
+	//Mat Blur;
+	//blur(grayImg, Blur, Size(3, 3)); // Reduce noise with a kernel 3x3
+	//Canny(Blur, edges, low_threshold, low_threshold*ratio, kernel_size);
+
+	// Detect edges using Coherent Line
+	CoherentLine(grayImg, edges, low_threshold*0.1);
+
+	// Find contours
+	Mat edgesBinary;
+	threshold(edges, edgesBinary, 200, 255, CV_THRESH_BINARY_INV);
+	//imshow("", edges);
+	//imshow("edgesBinary", edgesBinary);
+
+	thinning(edgesBinary, edgesBinary);
+	//imshow("edgesBinary", edgesBinary); waitKey(0);
+	BranchPointRemoval(edgesBinary);
+
+	findContours(edgesBinary, detectedContours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0));
+	
+	for (size_t k = 0; k < detectedContours.size(); k++){
+		//cout << detectedContours[k].size() << " ";
+		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 2, false);
+		//cout << detectedContours[k].size() << endl;
+	}
+	
+	// Get the moments
+	vector<Moments> mu(detectedContours.size());
+	for (int i = 0; i < detectedContours.size(); i++)
+		mu[i] = moments(detectedContours[i], false);
+
+	//  Get the mass centers:
+	filteredContours.clear();
+	vector<Point2f> mc(detectedContours.size());
+	vector<float> MomentWeights(detectedContours.size());
+
+	for (int i = 0; i < detectedContours.size(); i++) {
+		mc[i] = Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
+		MomentWeights[i] = MWCalculation(mu[i], mc[i]);
+		if (MomentWeights[i]> Ts*0.1)
+			filteredContours.push_back(detectedContours[i]);
+	}
+
+	// Draw contours
+	RNG rng(12345);
+	Mat drawOrigin = Mat(grayImg.size(), CV_8UC3, Scalar(255, 255, 255));
+	Mat drawFiltered = Mat(grayImg.size(), CV_8UC3, Scalar(255, 255, 255));
+	Mat sketchContours = Mat(grayImg.size(), CV_8UC1, Scalar(255, 255, 255));
+
+	for (int i = 0; i< detectedContours.size(); i++) {
+		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
+		drawContours(drawOrigin, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
+		if (MomentWeights[i]> Ts*0.1){
+			//Color
+			drawContours(drawFiltered, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
+			//Black
+			drawContours(sketchContours, detectedContours, i, Scalar(0, 0, 0), 2, 8, hierarchy, 2, Point());
+		}
+	}
+
+	cout << "Number of Edges before filtering : " << detectedContours.size() << endl;
+	cout << "Number of Edges after filtering : " << filteredContours.size() << endl << endl;
+
+	/// Show in a window
+	imwrite("ExtractEdges.jpg", edges);
+	imwrite("ContourOrigin.jpg", drawOrigin);
+	imwrite("ContourFiltered.jpg", drawFiltered);
+	imwrite("SketchContours.jpg", sketchContours);
+	
+
+	if (contourShow){
+		imshow("Extracted Edges", edges);
+		imshow("Original Contours", drawOrigin);
+		imshow("Filtered Contours", drawFiltered);
+		imshow("Final Contours", sketchContours);
+	}
+}
+
+float MWCalculation(Moments mu, Point2f mc){
+	return mu.m00 / norm(Mat(mc), Mat(faceCenter));
+}
+
 void  Bspline(vector<Point> &pointSet){
 	vector <Point> spline;
 	cout << pointSet.size() << " ";
@@ -37,11 +124,11 @@ void  Bspline(vector<Point> &pointSet){
 	// pick up controls points
 
 
-	for (int i = 3; i < pointSet.size(); i=i+5)
+	for (int i = 3; i < pointSet.size(); i = i + 5)
 	{
-		Point p1 = pointSet[i-3];
-		Point p2 = pointSet[i-2];
-		Point p3 = pointSet[i-1];
+		Point p1 = pointSet[i - 3];
+		Point p2 = pointSet[i - 2];
+		Point p3 = pointSet[i - 1];
 		Point p4 = pointSet[i];
 
 		int divisions = sqrt(pow(p3.x - p2.x, 2) + pow(p3.y - p2.y, 2));
@@ -64,7 +151,7 @@ void  Bspline(vector<Point> &pointSet){
 			//cout<<t<<endl;
 			spline.push_back(Point((a[2] + t * (a[1] + t * a[0]))*t + a[3], (b[2] + t * (b[1] + t * b[0]))*t + b[3]));
 		}
-		
+
 	}
 	pointSet.clear();
 	pointSet = spline;
@@ -111,14 +198,14 @@ void CoherentLine(Mat src, Mat & dst, double thres){
 			dst.at<uchar>(y, x) = (uchar)img[y][x];
 		}
 	}
-	//imshow(" ", dst); cvWaitKey(0);
+	//imshow(" ", dst); waitKey(0);
 
 
 	/* Compare cannny
 	Mat canny;
 	Canny(src, canny, 90, 180, 3);
 	canny = ~canny;
-	imshow("", canny); cvWaitKey(0);
+	imshow("", canny); waitKey(0);
 	*/
 }
 
@@ -205,14 +292,14 @@ void thinningIteration(cv::Mat& img, int iter)
 * 		src  The source image, binary with range = [0,255]
 * 		dst  The destination image
 */
-void thinning(const cv::Mat& src, cv::Mat& dst)
+void thinning(const Mat& src, Mat& dst)
 {
 	dst = src.clone();
 	dst /= 255;         // convert to binary image
 
 	cv::Mat prev = cv::Mat::zeros(dst.size(), CV_8UC1);
 	cv::Mat diff;
-	
+
 	//int i = 0;
 	do {
 		thinningIteration(dst, 0);
@@ -231,125 +318,21 @@ void thinning(const cv::Mat& src, cv::Mat& dst)
 
 void BranchPointRemoval(Mat &src){
 	int removePoint = 0;
-	for (int i = 1; i < src.rows-1; i++)
-		for (int j = 1; j < src.cols-1; j++){
-			if ((int)src.at<uchar>(i, j)==255){
-				int count = 0;
-				for (int k = -1; k <= 1; k++){
-					for (int l = -1; l <= 1; l++){
-						if ((int)src.at<uchar>(i + k, j + l) == 255)
-							count++;
-					}
-				}
-				if (count>4){
-					src.at<uchar>(i, j) = (uchar)0;
-					removePoint += count;
+	for (int i = 1; i < src.rows - 1; i++)
+	for (int j = 1; j < src.cols - 1; j++){
+		if ((int)src.at<uchar>(i, j) == 255){
+			int count = 0;
+			for (int k = -1; k <= 1; k++){
+				for (int l = -1; l <= 1; l++){
+					if ((int)src.at<uchar>(i + k, j + l) == 255)
+						count++;
 				}
 			}
-		}
-		cout << "removePoint: " << removePoint << endl;
-}
-void CannyThreshold(int, void*){
-	
-
-	vector<vector<Point> > detectedContours;
-	vector<Vec4i> hierarchy;
-	Mat Edges = Mat::zeros(R2.size(), CV_8UC1);
-
-	// Detect edges using canny
-	//Mat Blur;
-	//blur(R2, Blur, Size(3, 3)); // Reduce noise with a kernel 3x3
-	//Canny(Blur, Edges, low_threshold, low_threshold*ratio, kernel_size);
-
-	// Detect edges using Coherent Line
-	CoherentLine(R2, Edges, low_threshold*0.1);
-
-	// Find contours
-	Mat EdgesBinary;
-	threshold(Edges, EdgesBinary, 200, 255, CV_THRESH_BINARY_INV);
-	//imshow("", Edges);
-	//imshow("EdgesBinary", EdgesBinary);
-
-	thinning(EdgesBinary, EdgesBinary);
-	//imshow("EdgesBinary", EdgesBinary); waitKey(0);
-	BranchPointRemoval(EdgesBinary);
-
-
-	findContours(EdgesBinary, detectedContours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0));
-	
-
-
-
-	for (size_t k = 0; k < detectedContours.size(); k++){
-		//cout << detectedContours[k].size() << " ";
-		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 2, false);
-		//cout << detectedContours[k].size() << endl;
-		if (detectedContours[k].size()>4){
-			//cout<<k<<endl;
-		//	Bspline(detectedContours[k]);
+			if (count>4){
+				src.at<uchar>(i, j) = (uchar)0;
+				removePoint += count;
+			}
 		}
 	}
-	
-	/*vector<vector<Point> > smoothContours(detectedContours.size());
-	for (size_t k = 0; k < detectedContours.size(); k++){
-		approxPolyDP(Mat(detectedContours[k]), smoothContours[k], 2, false);
-		cout << detectedContours[k].size() << " " << smoothContours[k].size() << endl;
-	}*/
-	
-
-
-	
-
-	// Get the moments
-	vector<Moments> mu(detectedContours.size());
-	for (int i = 0; i < detectedContours.size(); i++)
-		mu[i] = moments(detectedContours[i], false);
-
-	//  Get the mass centers:
-	filteredContours.clear();
-	vector<Point2f> mc(detectedContours.size());
-	vector<float> MomentWeights(detectedContours.size());
-
-	for (int i = 0; i < detectedContours.size(); i++) {
-		mc[i] = Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
-		MomentWeights[i] = MWCalculation(mu[i], mc[i]);
-		if (MomentWeights[i]> Ts*0.1)
-			filteredContours.push_back(detectedContours[i]);
-	}
-
-	// Draw contours
-	RNG rng(12345);
-	Mat drawOrigin = Mat(R2.size(), CV_8UC3, Scalar(255, 255, 255));
-	Mat drawFiltered = Mat(R2.size(), CV_8UC3, Scalar(255, 255, 255));
-	sketchContours = Mat(R2.size(), CV_8UC1, Scalar(255, 255, 255));
-
-	for (int i = 0; i< detectedContours.size(); i++) {
-		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-		drawContours(drawOrigin, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
-		if (MomentWeights[i]> Ts*0.1){
-			//Color
-			drawContours(drawFiltered, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
-			//Black
-			drawContours(sketchContours, detectedContours, i, Scalar(0, 0, 0), 2, 8, hierarchy, 2, Point());
-		}
-	}
-
-
-
-
-	cout << "Number of Edges before filtering : " << detectedContours.size() << endl;
-	cout << "Number of Edges after filtering : " << filteredContours.size() << endl << endl;
-
-	/// Show in a window
-	imwrite("ContourOrigin.jpg", drawOrigin);
-	imwrite("ContourFiltered.jpg", drawFiltered);
-	imwrite("SketchContours.jpg", sketchContours);
-	imwrite("ExtractEdges.jpg", Edges);
-
-	if (contourShow){
-		imshow("Original Contours", drawOrigin);
-		imshow("Filtered Contours", drawFiltered);
-		imshow("Final Contours", sketchContours);
-		imshow("Extracted Edges", Edges);
-	}
+	cout << "removePoint: " << removePoint << endl;
 }

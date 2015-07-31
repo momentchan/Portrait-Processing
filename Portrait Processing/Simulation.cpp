@@ -1,23 +1,24 @@
 #include "FuncDeclaration.h"
 
-extern Mat R2;
-extern Mat refineImage;
-extern vector<vector<Point> > filteredContours;
+extern Mat colorImg;
 extern Mat colorSegment;
-Mat simulation;
+extern vector <Scalar> colorValue;
+extern vector <Mat> fillRegions;
+extern vector<vector<Point> > filteredContours;
+
+Mat humanPortrait;
 vector < vector<Point2i > > blobs;
-vector<Rect> boundRects;
+
 int fillLines = 0;
 bool turn = false;
 
 void DrawSimulation(){
+	humanPortrait = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
+	FillSimulation();
 	SketchSimulation();
-	//FillSimulation();
 }
 void SketchSimulation(){
 	sort(filteredContours.begin(), filteredContours.end(), CompareLength);
-	simulation = Mat(R2.size(), CV_8UC3, Scalar(255, 255, 255));
-
 	ofstream outputFile;
 	for (int i = 0; i < filteredContours.size(); i++) {
 		cout << "Length of " << i + 1 << " contour: " << arcLength(filteredContours[i], false) << endl;
@@ -28,110 +29,58 @@ void SketchSimulation(){
 		for (int j = 0; j < filteredContours[i].size()-1; j++){
 		//for (int j = 0; j < filteredContours[i].size() * 1 / 2; j++){
 			outputFile << filteredContours[i][j].x << " " << filteredContours[i][j].y << endl;
-			
-			line(colorSegment, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
-			//line(simulation, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
-			//circle(simulation, filteredContours[i][j], 1, Scalar(0, 0, 0), 0, CV_AA);
-			//imshow("Drawing Simulation", simulation);
-			imshow("Drawing Simulation", colorSegment);
-			cvWaitKey(10);
+			line(humanPortrait, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
+			//circle(humanPortrait, filteredContours[i][j], 1, Scalar(0, 0, 0), 0, CV_AA);
+			imshow("Drawing Simulation", humanPortrait);
+			waitKey(10);
 		}
-		//cvWaitKey(0);
+		//waitKey(0);
 		outputFile.close();
 	}
-	cvWaitKey(0);
+	waitKey(0);
 }
 void FillSimulation(){
-
-	ConnectedComponent(refineImage, blobs);
-
-	//Find connected components and construct Bounding box
-	vector <Mat> fillRegions;
-	for (int i = 0; i < blobs.size(); i++) {
-		//cout << "Number of points in region " << i + 1 << " : " << blobs[i].size() << endl;
-		
-		Mat fillRegion = Mat::zeros(R2.size(), CV_8U);
-
-		for (int j = 0; j < blobs[i].size(); j++) {
-			int x = blobs[i][j].x;
-			int y = blobs[i][j].y;
-			fillRegion.at<uchar>(y, x) = 255;
-		}
-		// Perform hole filling to remove unwanted holes
-		//fillRegion = HoleFilling(fillRegion);
-		fillRegion = ~fillRegion;
-		fillRegions.push_back(fillRegion);
-
-		string fileName = outputFileName("fillRegions/fill", i+1, ".jpg");
-		//imwrite(fileName, fillRegion);
-		boundRects.push_back(BoundingBox(fillRegion));
-		rectangle(fillRegion, boundRects[i].tl(), boundRects[i].br(), 128, 2, 8, 0);
-		imwrite(fileName, fillRegion);
-	}
-
-	
 	//Filling regions
-	for (int i = 0; i < blobs.size(); i++) {
-
+	for (int i = 0; i < fillRegions.size(); i++) {
 		// Boundary initialization
-		int ys = boundRects[i].tl().y;
-		int ye = boundRects[i].br().y;
-		int xs = boundRects[i].tl().x;
-		int xe = boundRects[i].br().x;
-		boundaryInitial(ys, ye, xs, xe, 5);
-		
+		int ys = 1;
+		int ye = colorImg.rows-1;
+		int xs = 1;
+		int xe = colorImg.cols-1;
+		Mat fillRgionBlack;
+		cvtColor(fillRegions[i], fillRgionBlack, CV_RGB2GRAY);
+		fillRgionBlack = fillRgionBlack>245;
 				
-		float size = boundRects[i].height;
-		if (boundRects[i].height < boundRects[i].width) size = boundRects[i].width;
+		float size = 0;
+		//float size = boundRects[i].height;
+		//if (boundRects[i].height < boundRects[i].width) size = boundRects[i].width;
 		
-		int rows = ye - ys;
-		int gap = rows*0.01;
-		if (gap < 3) gap = 3;
+		//int rows = ye - ys;
+		//int gap = rows*0.01;
+		//if (gap < 3) gap = 3;
+		int gap = 5;
 
 		ofstream outputFile;
 		string fileName = outputFileName("drawPoints/fill", i, ".txt");
 		outputFile.open(fileName);
 		Point previousPoint;
+		Vec3b fillColor = Vec3b(colorValue[i][0], colorValue[i][1], colorValue[i][2]);
 		
+		// Find draw points
 		for (int j = ys; j <= ye; j = j + gap)
-			FindDrawPoints(j, xs, ys, xe, fillRegions[i], simulation, outputFile, size, previousPoint);
+			FindDrawPoints(j, xs, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
 		// Last Row
 		for (int k = xs; k <= xe; k = k + gap)
-			FindDrawPoints(ye, k, ys, xe, fillRegions[i], simulation, outputFile, size, previousPoint);
+			FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
 		outputFile.close();
 	}
-
 	cout << "\nTotal Number of fill lines: " << fillLines << endl<<endl;
-	cvWaitKey(0);
+	waitKey(0);
 }
 
-void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, ofstream & outputFile, float size, Point & previousPoint){
+void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, ofstream & outputFile, float size, Vec3b fillColor, Point & previousPoint){
 	vector<Point> points;
-	//cout << y << " " << x << endl;
-	/**/
-	//Initial starting points
-	/*
-	if ((int)fill_region.at<uchar>(y, x) < 128)
-		points.push_back(Point(x, y));
-	else{
-		while (y > ys && x < xe){
-			y = y - 1;
-			x = x + 1;
-			if ((int)fill_region.at<uchar>(y, x) < 128){
-				points.push_back(Point(x, y));
-				break;
-			}
-		}
-	}
-	
-
-	int y = y - 1;
-	int x = x + 1;
-	bool cross = false;
-	*/
 	bool cross = true;
-	if (y < ys) y = ys;
-	if (x > xe) x = xe;
 
 	//Find draw points
 	while (y > ys && x < xe){		// Not touch boundary
@@ -148,7 +97,7 @@ void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, o
 		y = y - 1;
 		x = x + 1;
 	}
-	if(points.size()%2!=0)  // add the boundary point
+	if (points.size() % 2 != 0)  // add the boundary point
 		points.push_back(Point(x, y));
 
 	//Draw points
@@ -158,39 +107,30 @@ void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, o
 	if (!turn){
 		for (int i = 0; i < num; i++)
 			//if (norm(points[2 * i] - points[2 * i + 1])>size*0.05)
-			{
-				//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
-				line(fill, points[2 * i], points[2 * i + 1], Scalar(0, 0, 0), 3);
-				previousPoint = points[2 * i + 1];
-				outputFile << points[2 * i] << points[2 * i + 1] << endl;
-				fillLines++;
-				imshow("Drawing Simulation", fill);
-				waitKey(10);
-			}
+		{
+			//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
+			
+			line(fill, points[2 * i], points[2 * i + 1], fillColor, 3);
+			previousPoint = points[2 * i + 1];
+			outputFile << points[2 * i] << points[2 * i + 1] << endl;
+			fillLines++;
+			imshow("Drawing Simulation", fill);
+			waitKey(10);
+		}
 	}
 	else {
-		for (int i = num-1; i >= 0; i--)
-			if (norm(points[2 * i] - points[2 * i + 1]) > size*0.05)
-			{
-				//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
-				line(fill, points[2 * i + 1], points[2 * i], Scalar(0, 0, 0), 3);
-				previousPoint = points[2 * i];
-				outputFile << points[2 * i + 1] << points[2 * i] << endl;
-				fillLines++;
-				imshow("Drawing Simulation", fill);
-				waitKey(10);
-			}
+		for (int i = num - 1; i >= 0; i--)
+		if (norm(points[2 * i] - points[2 * i + 1]) > size*0.05)
+		{
+			//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
+			line(fill, points[2 * i + 1], points[2 * i], fillColor, 3);
+			previousPoint = points[2 * i];
+			outputFile << points[2 * i + 1] << points[2 * i] << endl;
+			fillLines++;
+			imshow("Drawing Simulation", fill);
+			waitKey(10);
+		}
 	}
 	turn = !turn;
-}
-void boundaryInitial(int &ys, int &ye, int &xs, int &xe, int range){
-	for (int i = 0; i < range; i++){
-		if (ys > 0) ys--;
-		if (ye < R2.rows-range) ye++;
-		else ye = R2.rows - range;
-		if (xs > 0) xs--;
-		if (xe < R2.cols - range) xe++;
-		else xe = R2.cols - range;
-	}
 }
 

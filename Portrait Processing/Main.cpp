@@ -2,54 +2,33 @@
 #include "FuncDeclaration.h"
 
 //Variables for face detection
-Mat R1;
-Mat R2;
-Mat R2color;
+Mat colorImg;
+Mat grayImg;
 Mat colorSegment;
-Point2f center;
+Point2f faceCenter;
 vector<vector<Point> > filteredContours;
 
-Mat binaryImage;
-Mat refineImage;
-
 Mat fillAreas;
-Mat sketchContours;
 Mat portrait;
-
-
 
 //Variables for showing images
 bool contourShow = 1;
-bool binaryShow = 1;
-bool refineShow = 1;	
-bool separateShow = 1;
 void Translation();
 
 int main(int argc, const char** argv)
 {
-	R2color = imread("R2.jpg");
+	//Tracking and detecting face
+	//FaceDetection();
+	//system("cls");
 	
-	ColorSeparation();
-
-	////Tracking and detecting face
-	////FaceDetection();
-	////system("cls");
-
-	R2 = imread("R2.jpg");
-	///cvtColor(R1, R1, CV_RGB2GRAY);
-	cvtColor(R2, R2, CV_RGB2GRAY);
-	//center = Point2f(200, 200);
+	colorImg = imread("colorImage.jpg");
+	cvtColor(colorImg, grayImg, CV_RGB2GRAY);
+	faceCenter = Point2f(200, 200);
 	ContourExtraction();
-
-	///////*
-	/////*Binarization();
-	////Refinement();
-	////Separation();*/
+	ColorSeparation();
 	DrawSimulation();
-	//////*/
-	//////Translation();
-
-	//
+	
+	////////Translation();
 }
 
 

@@ -75,10 +75,17 @@ int HistogramCalulation(Mat image, Mat & histImage, float alpha){
 		line(histImage, Point(bin_w*(i), hist_h), Point(bin_w*(i), hist_h - histogram[i]), Scalar(0, 0, 0), 1, 8, 0);
 	imwrite("b2_histogram.jpg", histImage);
 
-	cvWaitKey();
+	waitKey();
 	return T;
 }
 Rect BoundingBox(Mat holefilled){
+	cvtColor(holefilled, holefilled, CV_RGB2GRAY);
+	imshow("", holefilled); waitKey(0);
+	holefilled = holefilled<245;
+	//holefilled = HoleFilling(holefilled);
+	//holefilled = holefilled<245;
+	imshow("", holefilled); waitKey(0);
+
 	Mat fill_edges;
 	vector<Vec4i> hierarchy;
 	vector<vector<Point> > contours;
@@ -122,15 +129,15 @@ Rect BoundingBox(Mat holefilled){
 	for (int i = 0; i< boundRect.size(); i++)
 	{
 		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
-		//drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
+		drawContours(drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point());
 		//cout << boundRect[i].tl() << " " << boundRect[i].br() << " " << boundRect[i].area() << endl;
 		rectangle(drawing, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0);
 	}
 	//cout << "Number of box after filtering: " << boundRect.size() << endl<<endl;
 
 	/// Show in a window
-	//imshow("Contours", drawing);
-	//cvWaitKey(0);
+	imshow("Contours", drawing);
+	waitKey(0);
 	return boundRect[0];
 }
 Mat HoleFilling(Mat fill_region)
@@ -212,9 +219,7 @@ void FindBlobs(const Mat &binary, vector < vector<Point2i> > &blobs, Mat &labelI
 					blob.push_back(Point2i(j, i));
 				}
 			}
-
 			blobs.push_back(blob);
-
 			label_count++;
 		}
 	}

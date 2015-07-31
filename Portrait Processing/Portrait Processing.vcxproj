@@ -159,15 +159,12 @@
     <Xml Include="haarcascade_frontalface_default.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Binarization.cpp" />
     <ClCompile Include="CoherentLineDrawing.cpp" />
     <ClCompile Include="ColorSeparation.cpp" />
     <ClCompile Include="ContourExtraction.cpp" />
     <ClCompile Include="FaceDetection.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MeanShift.cpp" />
-    <ClCompile Include="Refinement.cpp" />
-    <ClCompile Include="Separation.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>

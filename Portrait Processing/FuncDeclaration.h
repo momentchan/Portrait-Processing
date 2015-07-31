@@ -7,7 +7,9 @@ void FaceDetection();
 void ContourExtraction();
 void CannyThreshold(int, void*);
 float MWCalculation(Moments, Point2f);
-void CoherentLine(Mat,Mat&);
+void CoherentLine(Mat, Mat &, double);
+void thinning(const Mat&, Mat&);
+void BranchPointRemoval(Mat &);
 
 
 // Binarization
@@ -23,7 +25,7 @@ void Separation();
 void DrawSimulation();
 void SketchSimulation();
 void FillSimulation();
-void FindDrawPoints(int, int, int, int, Mat, Mat&, ofstream&, float, Point&);
+void FindDrawPoints(int, int, int, int, Mat, Mat&, ofstream&, float, Vec3b, Point&);
 void boundaryInitial(int&, int&, int&, int&, int);
 
 // Utilities
