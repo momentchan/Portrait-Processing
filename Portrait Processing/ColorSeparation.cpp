@@ -50,10 +50,23 @@ void ColorSeparation(){
 			fillRegions[label].at<Vec3b>(i, j) = Vec3b(0, 0, 0);
 			regionPixNum[label]++;
 		}
+
+	int backgroundIndex = 0;
+	int maxPoints = 0;
 	for (int i = 0; i < regionNum; i++){
+		// Find background
+		if (regionPixNum[i]>maxPoints) {
+			backgroundIndex = i;
+			maxPoints = regionPixNum[i];
+		}
 		colorValue[i] /= regionPixNum[i];
 		ColorRefinement(fillRegions[i]);
 	}
+
+	// Background Removal
+	colorValue.erase(colorValue.begin() + backgroundIndex);
+	fillRegions.erase(fillRegions.begin() + backgroundIndex);
+
 
 	// Color Recovery
 	for (int i = 0; i < fillRegions.size(); i++){

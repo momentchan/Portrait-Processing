@@ -18,7 +18,7 @@ void Translation();
 int main(int argc, const char** argv)
 {
 	//Tracking and detecting face
-	//FaceDetection();
+	FaceDetection();
 	//system("cls");
 	
 	colorImg = imread("colorImage.jpg");
