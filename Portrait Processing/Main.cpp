@@ -18,19 +18,18 @@ void Translation();
 int main(int argc, const char** argv)
 {
 	//Tracking and detecting face
-	FaceDetection();
+	//FaceDetection();
 	//system("cls");
 	
-	colorImg = imread("colorImage.jpg");
+	colorImg = imread("colorImg.jpg");
 	cvtColor(colorImg, grayImg, CV_RGB2GRAY);
 	faceCenter = Point2f(200, 200);
-	ContourExtraction();
+	//ContourExtraction();
 	ColorSeparation();
 	DrawSimulation();
 	
-	////////Translation();
+	////////Translation
 }
-
 
 void Translation(){
 	int sketchNumbers = 0;

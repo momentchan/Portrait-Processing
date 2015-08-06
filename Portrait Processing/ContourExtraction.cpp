@@ -10,8 +10,8 @@ extern bool contourShow;
 extern vector<vector<Point> > filteredContours;
 extern Point2f faceCenter;
 
-int low_threshold = 3; //92; //canny threshold
-int max_threshold = 10; //150;
+int low_threshold = 53; //92; //canny threshold
+int max_threshold = 100; //150;
 int ratio = 2;
 int kernel_size = 3;
 int Ts = 1;
@@ -22,7 +22,7 @@ void ContourExtraction(){
 	if (contourShow){
 		namedWindow("Original Contours", CV_WINDOW_AUTOSIZE);
 		createTrackbar("Contour Threshold:", "Original Contours", &low_threshold, max_threshold, CannyThreshold);
-		createTrackbar("Criterion Threshold: ", "Original Contours", &Ts, 10, CannyThreshold);
+		createTrackbar("Criterion Threshold: ", "Original Contours", &Ts, 100, CannyThreshold);
 	}
 	CannyThreshold(0, 0);
 	waitKey(0);
@@ -41,7 +41,7 @@ void CannyThreshold(int, void*){
 	//Canny(Blur, edges, low_threshold, low_threshold*ratio, kernel_size);
 
 	// Detect edges using Coherent Line
-	CoherentLine(grayImg, edges, low_threshold*0.1);
+	CoherentLine(grayImg, edges, low_threshold*0.01);
 
 	// Find contours
 	Mat edgesBinary;
@@ -57,7 +57,7 @@ void CannyThreshold(int, void*){
 	
 	for (size_t k = 0; k < detectedContours.size(); k++){
 		//cout << detectedContours[k].size() << " ";
-		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 2, false);
+		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 3, false);
 		//cout << detectedContours[k].size() << endl;
 	}
 	
@@ -74,7 +74,7 @@ void CannyThreshold(int, void*){
 	for (int i = 0; i < detectedContours.size(); i++) {
 		mc[i] = Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
 		MomentWeights[i] = MWCalculation(mu[i], mc[i]);
-		if (MomentWeights[i]> Ts*0.1)
+		if (MomentWeights[i]> Ts*0.01)
 			filteredContours.push_back(detectedContours[i]);
 	}
 
@@ -87,7 +87,7 @@ void CannyThreshold(int, void*){
 	for (int i = 0; i< detectedContours.size(); i++) {
 		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 		drawContours(drawOrigin, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
-		if (MomentWeights[i]> Ts*0.1){
+		if (MomentWeights[i]> Ts*0.01){
 			//Color
 			drawContours(drawFiltered, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
 			//Black

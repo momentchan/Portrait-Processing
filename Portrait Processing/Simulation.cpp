@@ -3,8 +3,10 @@
 extern Mat colorImg;
 extern Mat colorSegment;
 extern vector <Scalar> colorValue;
+extern vector<Scalar> colorPalette;
 extern vector <Mat> fillRegions;
 extern vector<vector<Point> > filteredContours;
+extern vector<vector<int>> colorIndexes;
 
 Mat humanPortrait;
 vector < vector<Point2i > > blobs;
@@ -15,7 +17,7 @@ bool turn = false;
 void DrawSimulation(){
 	humanPortrait = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
 	FillSimulation();
-	SketchSimulation();
+	//SketchSimulation();
 }
 void SketchSimulation(){
 	sort(filteredContours.begin(), filteredContours.end(), CompareLength);
@@ -30,9 +32,9 @@ void SketchSimulation(){
 		//for (int j = 0; j < filteredContours[i].size() * 1 / 2; j++){
 			outputFile << filteredContours[i][j].x << " " << filteredContours[i][j].y << endl;
 			line(humanPortrait, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
-			//circle(humanPortrait, filteredContours[i][j], 1, Scalar(0, 0, 0), 0, CV_AA);
+			//circle(humanPortrait, filteredContours[i][j], 3, Scalar(0, 0, 0), 0, CV_AA);
 			imshow("Drawing Simulation", humanPortrait);
-			waitKey(10);
+			waitKey(50);
 		}
 		//waitKey(0);
 		outputFile.close();
@@ -42,39 +44,44 @@ void SketchSimulation(){
 void FillSimulation(){
 	//Filling regions
 	for (int i = 0; i < fillRegions.size(); i++) {
-		// Boundary initialization
-		int ys = 1;
-		int ye = colorImg.rows-1;
-		int xs = 1;
-		int xe = colorImg.cols-1;
-		Mat fillRgionBlack;
-		cvtColor(fillRegions[i], fillRgionBlack, CV_RGB2GRAY);
-		fillRgionBlack = fillRgionBlack>245;
-				
-		float size = 0;
-		//float size = boundRects[i].height;
-		//if (boundRects[i].height < boundRects[i].width) size = boundRects[i].width;
-		
-		//int rows = ye - ys;
-		//int gap = rows*0.01;
-		//if (gap < 3) gap = 3;
-		int gap = 5;
+		if (colorIndexes[i].size()>0){
 
-		ofstream outputFile;
-		string fileName = outputFileName("drawPoints/fill", i, ".txt");
-		outputFile.open(fileName);
-		Point previousPoint;
-		Vec3b fillColor = Vec3b(colorValue[i][0], colorValue[i][1], colorValue[i][2]);
-		
-		// Find draw points
-		for (int j = ys; j <= ye; j = j + gap)
-			FindDrawPoints(j, xs, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
-		// Last Row
-		for (int k = xs; k <= xe; k = k + gap)
-			FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
-		outputFile.close();
+			// Boundary initialization
+			int ys = 1;
+			int ye = colorImg.rows - 1;
+			int xs = 1;
+			int xe = colorImg.cols - 1;
+			Mat fillRgionBlack;
+			cvtColor(fillRegions[i], fillRgionBlack, CV_RGB2GRAY);
+			fillRgionBlack = fillRgionBlack > 245;
+
+			float size = 0;
+			//float size = boundRects[i].height;
+			//if (boundRects[i].height < boundRects[i].width) size = boundRects[i].width;
+
+			//int rows = ye - ys;
+			//int gap = rows*0.01;
+			//if (gap < 3) gap = 3;
+			int gap = 5;
+
+			ofstream outputFile;
+			string fileName = outputFileName("drawPoints/fill", i, ".txt");
+			outputFile.open(fileName);
+			Point previousPoint;
+			Vec3b fillColor = Vec3b(colorPalette[i][0], colorPalette[i][1], colorPalette[i][2]);
+
+
+			//outputFile << colorIndexes[i] << endl;
+			// Find draw points
+			for (int j = ys; j <= ye; j = j + gap)
+				FindDrawPoints(j, xs, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
+			// Last Row
+			for (int k = xs; k <= xe; k = k + gap)
+				FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
+			outputFile.close();
+		}
 	}
-	cout << "\nTotal Number of fill lines: " << fillLines << endl<<endl;
+	cout << "\nTotal Number of fill lines: " << fillLines << endl << endl;
 	waitKey(0);
 }
 
