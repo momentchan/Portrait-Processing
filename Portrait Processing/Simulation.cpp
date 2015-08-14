@@ -17,9 +17,11 @@ bool turn = false;
 void DrawSimulation(){
 	humanPortrait = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
 	FillSimulation();
-	//SketchSimulation();
+	SketchSimulation();
+	imwrite("SimulationResult.jpg", humanPortrait);
 }
 void SketchSimulation(){
+	RNG rng(12345);
 	sort(filteredContours.begin(), filteredContours.end(), CompareLength);
 	ofstream outputFile;
 	for (int i = 0; i < filteredContours.size(); i++) {
@@ -27,14 +29,16 @@ void SketchSimulation(){
 
 		string fileName = outputFileName("drawPoints/sketch", i, ".txt");
 		outputFile.open(fileName);
-
+		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 		for (int j = 0; j < filteredContours[i].size()-1; j++){
 		//for (int j = 0; j < filteredContours[i].size() * 1 / 2; j++){
+			
 			outputFile << filteredContours[i][j].x << " " << filteredContours[i][j].y << endl;
 			line(humanPortrait, filteredContours[i][j], filteredContours[i][j + 1], Scalar(0, 0, 0), 2);
+			//line(humanPortrait, filteredContours[i][j], filteredContours[i][j + 1], color, 2);
 			//circle(humanPortrait, filteredContours[i][j], 3, Scalar(0, 0, 0), 0, CV_AA);
 			imshow("Drawing Simulation", humanPortrait);
-			waitKey(50);
+			waitKey(10);
 		}
 		//waitKey(0);
 		outputFile.close();
@@ -42,6 +46,7 @@ void SketchSimulation(){
 	waitKey(0);
 }
 void FillSimulation(){
+	int fillRegionsNum = 0;
 	//Filling regions
 	for (int i = 0; i < fillRegions.size(); i++) {
 		if (colorIndexes[i].size()>0){
@@ -65,11 +70,13 @@ void FillSimulation(){
 			int gap = 5;
 
 			ofstream outputFile;
-			string fileName = outputFileName("drawPoints/fill", i, ".txt");
+			string fileName = outputFileName("drawPoints/fill", fillRegionsNum, ".txt");
 			outputFile.open(fileName);
 			Point previousPoint;
 			Vec3b fillColor = Vec3b(colorPalette[i][0], colorPalette[i][1], colorPalette[i][2]);
 
+			// Write indexing of color
+			outputFile << i << endl;
 
 			//outputFile << colorIndexes[i] << endl;
 			// Find draw points
@@ -79,6 +86,8 @@ void FillSimulation(){
 			for (int k = xs; k <= xe; k = k + gap)
 				FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
 			outputFile.close();
+
+			fillRegionsNum++;
 		}
 	}
 	cout << "\nTotal Number of fill lines: " << fillLines << endl << endl;
@@ -119,7 +128,7 @@ void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, o
 			
 			line(fill, points[2 * i], points[2 * i + 1], fillColor, 3);
 			previousPoint = points[2 * i + 1];
-			outputFile << points[2 * i] << points[2 * i + 1] << endl;
+			outputFile << points[2 * i].x << " " << points[2 * i].y << " " << points[2 * i + 1].x << " " << points[2 * i + 1].y << endl;
 			fillLines++;
 			imshow("Drawing Simulation", fill);
 			waitKey(10);
@@ -132,7 +141,7 @@ void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, o
 			//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
 			line(fill, points[2 * i + 1], points[2 * i], fillColor, 3);
 			previousPoint = points[2 * i];
-			outputFile << points[2 * i + 1] << points[2 * i] << endl;
+			outputFile << points[2 * i + 1].x << " " << points[2 * i + 1].y << " " << points[2 * i].x << " " << points[2 * i].y << endl;
 			fillLines++;
 			imshow("Drawing Simulation", fill);
 			waitKey(10);

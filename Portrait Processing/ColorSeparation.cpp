@@ -38,7 +38,7 @@ void ColorRead(){
 	string str;
 	while (getline(file, str))
 	{
-		vector<string> sep = split(str, ' ');
+		vector<string> sep = split(str, ' ');   
 		float r = stof(sep[0]);
 		float g = stof(sep[1]);
 		float b = stof(sep[2]);

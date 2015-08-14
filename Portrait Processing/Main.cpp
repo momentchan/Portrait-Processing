@@ -24,7 +24,7 @@ int main(int argc, const char** argv)
 	colorImg = imread("colorImg.jpg");
 	cvtColor(colorImg, grayImg, CV_RGB2GRAY);
 	faceCenter = Point2f(200, 200);
-	//ContourExtraction();
+	ContourExtraction();
 	ColorSeparation();
 	DrawSimulation();
 	

@@ -51,7 +51,7 @@ void CannyThreshold(int, void*){
 
 	thinning(edgesBinary, edgesBinary);
 	//imshow("edgesBinary", edgesBinary); waitKey(0);
-	BranchPointRemoval(edgesBinary);
+	//BranchPointRemoval(edgesBinary);
 
 	findContours(edgesBinary, detectedContours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0, 0));
 	
@@ -106,6 +106,7 @@ void CannyThreshold(int, void*){
 	
 
 	if (contourShow){
+		imshow("EdgesBinary", edgesBinary);
 		imshow("Extracted Edges", edges);
 		imshow("Original Contours", drawOrigin);
 		imshow("Filtered Contours", drawFiltered);
@@ -318,17 +319,17 @@ void thinning(const Mat& src, Mat& dst)
 
 void BranchPointRemoval(Mat &src){
 	int removePoint = 0;
-	for (int i = 1; i < src.rows - 1; i++)
-	for (int j = 1; j < src.cols - 1; j++){
+	for (int i = 2; i < src.rows - 2; i++)
+	for (int j = 2; j < src.cols - 2; j++){
 		if ((int)src.at<uchar>(i, j) == 255){
 			int count = 0;
-			for (int k = -1; k <= 1; k++){
-				for (int l = -1; l <= 1; l++){
+			for (int k = -2; k <= 2; k++){
+				for (int l = -2; l <= 2; l++){
 					if ((int)src.at<uchar>(i + k, j + l) == 255)
 						count++;
 				}
 			}
-			if (count>4){
+			if (count>10){
 				src.at<uchar>(i, j) = (uchar)0;
 				removePoint += count;
 			}
