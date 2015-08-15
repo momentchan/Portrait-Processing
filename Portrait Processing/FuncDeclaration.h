@@ -41,3 +41,4 @@ string outputFileName(string, int,string);
 
 int ContourSmooth();
 void ColorSeparation();
+void ColorDefinement();

@@ -14,23 +14,52 @@ Mat portrait;
 //Variables for showing images
 bool contourShow = 1;
 void Translation();
+void imageAdjustment(Mat &, double alpha=1.0, int beta=20);
 
+
+bool colorDefine = 0;
 int main(int argc, const char** argv)
 {
 	//Tracking and detecting face
-	//FaceDetection();
+	//	FaceDetection();
 	//system("cls");
-	
+	if (colorDefine){
+		colorImg = imread("DSC09943-3.jpg");
+		ColorDefinement();
+	}
+	else{
 	colorImg = imread("colorImg.jpg");
+	
 	cvtColor(colorImg, grayImg, CV_RGB2GRAY);
 	faceCenter = Point2f(200, 200);
-	ContourExtraction();
-	ColorSeparation();
-	DrawSimulation();
+	//ContourExtraction();
 	
+	ColorSeparation();
+	
+	//DrawSimulation();
+
 	////////Translation
+	}
 }
 
+
+void imageAdjustment(Mat &img , double alpha, int beta) {
+	Mat brighterImg = Mat::zeros(img.size(), img.type());
+	/// Do the operation new_image(i,j) = alpha*image(i,j) + beta
+	for (int y = 0; y < img.rows; y++)
+	{
+		for (int x = 0; x < img.cols; x++)
+		{
+			for (int c = 0; c < 3; c++)
+			{
+				brighterImg.at<Vec3b>(y, x)[c] =
+					saturate_cast<uchar>(alpha*(img.at<Vec3b>(y, x)[c]) + beta);
+			}
+		}
+	}
+	img = brighterImg;
+	imshow("", img); waitKey(0);
+}
 void Translation(){
 	int sketchNumbers = 0;
 	float paperSize = 20; //cm
@@ -61,9 +90,9 @@ void Translation(){
 		while (getline(file, str))
 		{
 			size_t pos = str.find(",");
-			float y = (stoi(str.substr(1, pos - 1)) - 200)*(float)(paperSize / imageSize)/100 + 0.4;
-			float z = (stoi(str.substr(pos + 2, str.length() - pos - 3)) - 200)*float(paperSize / imageSize)/100;
-			sub_sketch_pos.push_back(Point3f(0.2,y, z));
+			float y = (stoi(str.substr(1, pos - 1)) - 200)*(float)(paperSize / imageSize) / 100 + 0.4;
+			float z = (stoi(str.substr(pos + 2, str.length() - pos - 3)) - 200)*float(paperSize / imageSize) / 100;
+			sub_sketch_pos.push_back(Point3f(0.2, y, z));
 		}
 		sketch_pos.push_back(sub_sketch_pos);
 	}

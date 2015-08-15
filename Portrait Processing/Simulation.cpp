@@ -3,7 +3,7 @@
 extern Mat colorImg;
 extern Mat colorSegment;
 extern vector <Scalar> colorValue;
-extern vector<Scalar> colorPalette;
+extern vector<Scalar> colorPaletteRGB;
 extern vector <Mat> fillRegions;
 extern vector<vector<Point> > filteredContours;
 extern vector<vector<int>> colorIndexes;
@@ -73,7 +73,7 @@ void FillSimulation(){
 			string fileName = outputFileName("drawPoints/fill", fillRegionsNum, ".txt");
 			outputFile.open(fileName);
 			Point previousPoint;
-			Vec3b fillColor = Vec3b(colorPalette[i][0], colorPalette[i][1], colorPalette[i][2]);
+			Vec3b fillColor = Vec3b(colorPaletteRGB[i][0], colorPaletteRGB[i][1], colorPaletteRGB[i][2]);
 
 			// Write indexing of color
 			outputFile << i << endl;
