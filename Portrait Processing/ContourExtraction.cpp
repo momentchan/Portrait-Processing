@@ -57,7 +57,7 @@ void CannyThreshold(int, void*){
 	
 	for (size_t k = 0; k < detectedContours.size(); k++){
 		//cout << detectedContours[k].size() << " ";
-		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 3, false);
+		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 2, false);
 		//cout << detectedContours[k].size() << endl;
 	}
 	
