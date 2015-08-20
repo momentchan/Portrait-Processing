@@ -9,11 +9,20 @@ vector <Mat> separateRegionsBlack;
 vector <Mat> fillRegions;
 vector<Scalar> colorValue;
 vector<Scalar> colorPaletteRGB;
+vector<Scalar> colorPaletteHSV;
 vector<Scalar> colorPaletteTransform;
 vector<vector<int>> colorIndexes;
 
 bool selfPick = false;
-int colorSpace = CV_BGR2Lab;
+int colorSpace = CV_BGR2YCrCb;
+int s1 = 50;
+int s2 = 100;
+int s3 = 100;
+int compareRatio = 50;
+int LCHScale = 100;
+Mat originColorImg;
+vector<Scalar> colorTransformValue;
+vector<Scalar> colorHSVValue;
 
 void ColorRefinement(Mat & src){
 	int morph_elem = 0;
@@ -38,8 +47,9 @@ vector<string> split(string str, char delimiter) {
 }
 void ColorRead(){
 	ifstream RGBData("Color Palette/colorDefineBGR.txt");
+	ifstream HSVData("Color Palette/colorDefineHSV.txt");
 	ifstream TransformData;
-	if (colorSpace== CV_BGR2Lab)
+	if (colorSpace == CV_BGR2Lab)
 		TransformData.open("Color Palette/colorDefineLAB.txt");
 	else if (colorSpace == CV_BGR2YCrCb)
 		TransformData.open("Color Palette/colorDefineYCrCb.txt");
@@ -54,7 +64,7 @@ void ColorRead(){
 	string str;
 	while (getline(RGBData, str))
 	{
-		vector<string> sep = split(str, ' ');   
+		vector<string> sep = split(str, ' ');
 		float r = stof(sep[0]);
 		float g = stof(sep[1]);
 		float b = stof(sep[2]);
@@ -62,6 +72,15 @@ void ColorRead(){
 		vector<int> initial(0);
 		colorIndexes.push_back(initial);
 	}
+	while (getline(HSVData, str))
+	{
+		vector<string> sep = split(str, ' ');
+		float h = stof(sep[0]);
+		float s = stof(sep[1]);
+		float v = stof(sep[2]);
+		colorPaletteHSV.push_back(Scalar(h, s, v));
+	}
+
 	while (getline(TransformData, str))
 	{
 		vector<string> sep = split(str, ' ');
@@ -72,49 +91,6 @@ void ColorRead(){
 		//cout << Scalar(l, a, b) << endl;
 	}
 }
-void BGRtoYUV(Scalar & bgr){
-	float b = float(bgr[0]);
-	float g = float(bgr[1]);
-	float r = float(bgr[2]);
-
-	float y = 0.114*b + 0.587*g + 0.299*r;
-	float u = 0.436*b - 0.28886*g - 0.14713*r;
-	float v = -0.10001*b - 0.51499*g + 0.615*r;
-	bgr = Scalar(y, u, v);
-}
-void BGRtoXYZ(Scalar & bgr){
-	float b = float(bgr[0]/ 255.0);
-	float g = float(bgr[1] / 255.0);
-	float r = float(bgr[2] / 255.0);
-
-	float X = 0.180423*b + 0.357580*g + 0.412453*r;
-	float Y = 0.072169*b + 0.715160*g + 0.212671*r;
-	float Z = 0.950227*b + 0.119193*g + 0.019334*r;
-	bgr = Scalar(X, Y, Z);
-}
-float f(float t){
-	if (t > 0.008856)
-		t = pow(t, 0.33);
-	else
-		t = 7.787*t + 16 / 116;
-	return t;
-}
-void XYZtoLab(Scalar & xyz){
-	float x = float(xyz[0]);
-	float y = float(xyz[1]);
-	float z = float(xyz[2]);
-	x /= 0.950456;
-	z /= 1.088754;
-	float L;
-	if (y > 0.008856)
-		L = 116 * pow(y, 0.33) - 16;
-	else
-		L = 903.3*y;
-
-	float a = 500 * (f(x) - f(y));
-	float b = 200 * (f(x) - f(y));
-	xyz = Scalar(L,a,b);
-}
 void RGBtoLCH(Scalar & rgb){
 	float r = rgb[0];
 	float g = rgb[1];
@@ -122,8 +98,8 @@ void RGBtoLCH(Scalar & rgb){
 
 
 	float alpha = min(min(r, g), b) / max(max(r, g), b) / 100.0;
-	float Q = exp(alpha*3.0);
-	float L = (Q*max(max(r, g), b) + (1 - Q)*min(min(r, g), b))/2;
+	float Q = exp(alpha*LCHScale*0.1);
+	float L = (Q*max(max(r, g), b) + (1 - Q)*min(min(r, g), b)) / 2;
 	float C = Q*(abs(r - g) + abs(g - b) + abs(b - r)) / 3;
 	float H = atan((g - b) / (r - g));
 	if (r - g < 0 && g - b >= 0) H += 180;
@@ -177,35 +153,52 @@ float DeltaLCHFunction(Scalar LCH1, Scalar LCH2){
 
 	float dLCH = sqrt(pow(1.4456*dl, 2) + 1.4456*(c1*c1 + c2*c2 - 2 * c1*c2*cos(dh)));
 
-
-	
 	return dLCH;
 }
-void ColorRegistration(Scalar & color, int regionIndex){
+
+void ColorRegistration(Scalar color, Scalar hsv, int regionIndex){
 	vector<pair <int, double>> differenceArray;
-	//RGBtoLCH(color);
+	vector<pair <int, double>> hsvFilteredIndex;
+	if (colorSpace == CV_BGR2RGB)RGBtoLCH(color);
+	int candidateNum =  colorPaletteRGB.size();
+
 
 	int colorIndex = 0;
 	if (selfPick){
 		imshow("Separate Regions", separateRegions[regionIndex]); waitKey(0);
 		cin >> colorIndex;
 		destroyWindow("Separate Regions");
-		color = colorPaletteRGB[colorIndex-1];
-		colorIndexes[colorIndex-1].push_back(regionIndex);
+		color = colorPaletteRGB[colorIndex - 1];
+		colorIndexes[colorIndex - 1].push_back(regionIndex);
 	}
 	else{
+		// Do HSV filtering
 		float minDistance = INFINITY;
-		for (int i = 0; i < colorPaletteTransform.size(); i++){
-			Scalar colorMatch = colorPaletteTransform[i];
-			//RGBtoLCH(colorMatch);
-			
-
-			float distance = norm(Scalar((color[0] - colorMatch[0]), color[1] - colorMatch[1], color[2] - colorMatch[2]));//DeltaLCHFunction(color, colorMatch);// 
-			differenceArray.push_back(make_pair(i, distance));
-			sort(differenceArray.begin(), differenceArray.end(), ColorDifferenceCompare);
+		for (int i = 0; i < colorPaletteHSV.size(); i++){
+			Scalar colorMatch = colorPaletteHSV[i];
+			float distance = abs(hsv[0] - colorMatch[0]);//DeltaLCHFunction(color, colorMatch);// 
+			hsvFilteredIndex.push_back(make_pair(i, distance));
 		}
+		sort(hsvFilteredIndex.begin(), hsvFilteredIndex.end(), ColorDifferenceCompare);
+
+		minDistance = INFINITY;
+		for (int i = 0; i < candidateNum; i++){
+			//cout << hsvFilteredIndex[i].first << " " << hsv[0] << " " << colorPaletteHSV[hsvFilteredIndex[i].first][0]<< " " << hsvFilteredIndex[i].second << endl;
+			Scalar colorMatch = colorPaletteTransform[hsvFilteredIndex[i].first];
+			if (colorSpace == CV_BGR2RGB) RGBtoLCH(colorMatch);
+			float distance;
+
+			if (colorSpace == CV_BGR2RGB)
+				distance = DeltaLCHFunction(color, colorMatch);
+			else
+				distance = norm(Scalar((color[0] - colorMatch[0])*s1*0.01, (color[1] - colorMatch[1])*s2*0.01, (color[2] - colorMatch[2]))*0.01);
+
+			differenceArray.push_back(make_pair(i, distance));
+		}
+		sort(differenceArray.begin(), differenceArray.end(), ColorDifferenceCompare);
+
 		for (int i = 0; i < differenceArray.size(); i++){
-			colorIndex = differenceArray[i].first;
+			colorIndex = hsvFilteredIndex[differenceArray[i].first].first;
 			// no area have used this color
 			if (colorIndexes[colorIndex].size() == 0){
 				color = colorPaletteRGB[colorIndex];
@@ -225,7 +218,7 @@ void ColorRegistration(Scalar & color, int regionIndex){
 						// if the second option is too bad
 						/*insertible = false;
 						break;*/
-						if (differenceArray[i].second/differenceArray[i + 1].second<0.4){
+						if (differenceArray[i].second / differenceArray[i + 1].second<compareRatio*0.01){
 							insertible = true;
 							break;
 						}
@@ -233,7 +226,7 @@ void ColorRegistration(Scalar & color, int regionIndex){
 							insertible = false;
 							break;
 						}
-						
+
 					}
 				}
 				if (insertible == true){
@@ -247,88 +240,16 @@ void ColorRegistration(Scalar & color, int regionIndex){
 }
 
 
-void ColorSeparation(){
-	ColorRead();
-
-	cout << "Separating color regions ..." << endl;
-
-	// Bilateral Filtering
-	Mat bilateralFilteredImg;
-	Mat originColorImg = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
-	bilateralFilter(colorImg, bilateralFilteredImg, 20, 100, 50);
-	imwrite("Bilateral Image.jpg", bilateralFilteredImg);
-
-	// Mean shifting
+void ColorSeparateThreshold(int, void*){
 	colorSegment = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
-	IplImage* img = cvCloneImage(&(IplImage)colorImg);
-	int **ilabels = new int *[img->height];
-	for (int i = 0; i < img->height; i++) ilabels[i] = new int[img->width];
-	int regionNum = MeanShift(img, ilabels);
-	cout << "Segent region number: " << regionNum << endl;
-
-	Mat colorTransform;
-	vector<Scalar> colorTransformValue;
-	cvtColor(bilateralFilteredImg, colorTransform, colorSpace);
-
-	// Initial
-	for (int i = 0; i < regionNum; i++){
-		colorValue.push_back(Scalar(0, 0, 0));
-		colorTransformValue.push_back(Scalar(0, 0, 0));
-		separateRegions.push_back(Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255)));
+	colorIndexes.clear();
+	fillRegions.clear();
+	for (int i = 0; i < colorPaletteRGB.size(); i++){
+		vector<int> initial(0);
+		colorIndexes.push_back(initial);
 	}
-	separateRegionPoints.resize(regionNum);
-	
-
-	// Sort blob size
-	for (int i = 0; i < bilateralFilteredImg.rows; i++)
-		for (int j = 0; j < bilateralFilteredImg.cols; j++)
-		{
-			int label = ilabels[i][j];
-			separateRegionPoints[label].push_back(Point(i, j));
-		}
-	sort(separateRegionPoints.begin(), separateRegionPoints.end(), CompareLength);
-
-	// Compute average color
-	for (int i = 0; i < separateRegionPoints.size(); i++)
-		for (int j = 0; j < separateRegionPoints[i].size(); j++)
-			{
-				int x = separateRegionPoints[i][j].x;
-				int y = separateRegionPoints[i][j].y;
-				colorValue[i] += Scalar(bilateralFilteredImg.at<Vec3b>(x, y)[0], bilateralFilteredImg.at<Vec3b>(x, y)[1], bilateralFilteredImg.at<Vec3b>(x, y)[2]);
-				colorTransformValue[i] += Scalar(colorTransform.at<Vec3b>(x, y)[0], colorTransform.at<Vec3b>(x, y)[1], colorTransform.at<Vec3b>(x, y)[2]);
-			}
-
-
-	for (int i = 0; i < regionNum; i++){
-		int pixNum = separateRegionPoints[i].size();
-		colorValue[i] /= pixNum;
-		colorTransformValue[i] /= pixNum;
-		//cout << colorValue[i] << endl;
-	}
-
-
-	// Recover origin average color
-	for (int i = 0; i < separateRegionPoints.size(); i++){
-		Scalar color = colorValue[i];
-		for (int j = 0; j < separateRegionPoints[i].size(); j++){
-			int x = separateRegionPoints[i][j].x;
-			int y = separateRegionPoints[i][j].y;
-			originColorImg.at<Vec3b>(x, y) = Vec3b(color[0], color[1], color[2]);
-			separateRegions[i].at<Vec3b>(x, y) = Vec3b(color[0], color[1], color[2]);
-		}
-		separateRegionsBlack.push_back(FindLargestRegion(separateRegions[i]));
-	}
-	// Background Removal
-	colorValue.erase(colorValue.begin());
-	colorTransformValue.erase(colorTransformValue.begin());
-	separateRegions.erase(separateRegions.begin());
-	separateRegionsBlack.erase(separateRegionsBlack.begin());
-
-	//for (int i = 0; i < separateRegionsBlack.size(); i++)
-		//cout << ConnectedComponentNumber(separateRegionsBlack[0], separateRegionsBlack[i]);
-	imwrite("fillRegions/OriginColorSegment.jpg", originColorImg);
 	for (int i = 0; i < separateRegions.size(); i++){
-		ColorRegistration(colorTransformValue[i], i);
+		ColorRegistration(colorTransformValue[i], colorHSVValue[i], i);
 	}
 
 	// Color Recovery
@@ -349,14 +270,115 @@ void ColorSeparation(){
 			}
 			//cout << colorValue[i] << endl;
 		}
+	}
+
+	imshow("Origin Color Image", originColorImg);
+	imshow("Register Color Image", colorSegment);
+}
+
+void ColorSeparation(){
+	ColorRead();
+
+	cout << "Separating color regions ..." << endl;
+
+	// Bilateral Filtering
+	Mat bilateralFilteredImg;
+	
+	bilateralFilter(colorImg, bilateralFilteredImg, 20, 100, 50);
+	imwrite("Bilateral Image.jpg", bilateralFilteredImg);
+
+	// Mean shifting
+	colorSegment = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
+	IplImage* img = cvCloneImage(&(IplImage)colorImg);
+	int **ilabels = new int *[img->height];
+	for (int i = 0; i < img->height; i++) ilabels[i] = new int[img->width];
+	int regionNum = MeanShift(img, ilabels);
+	cout << "Segent region number: " << regionNum << endl;
+
+	Mat colorTransform;
+	originColorImg = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
+	cvtColor(bilateralFilteredImg, colorTransform, colorSpace);
+
+	Mat colorHSV;
+	cvtColor(bilateralFilteredImg, colorHSV, CV_BGR2HSV);
+
+	// Initial
+	for (int i = 0; i < regionNum; i++){
+		colorValue.push_back(Scalar(0, 0, 0));
+		colorHSVValue.push_back(Scalar(0, 0, 0));
+		colorTransformValue.push_back(Scalar(0, 0, 0));
+		separateRegions.push_back(Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255)));
+	}
+	separateRegionPoints.resize(regionNum);
+
+
+	// Sort blobs size
+	for (int i = 0; i < bilateralFilteredImg.rows; i++)
+	for (int j = 0; j < bilateralFilteredImg.cols; j++)
+	{
+		int label = ilabels[i][j];
+		separateRegionPoints[label].push_back(Point(i, j));
+	}
+	sort(separateRegionPoints.begin(), separateRegionPoints.end(), CompareLength);
+
+	// Compute average color
+	for (int i = 0; i < separateRegionPoints.size(); i++)
+	for (int j = 0; j < separateRegionPoints[i].size(); j++)
+	{
+		int x = separateRegionPoints[i][j].x;
+		int y = separateRegionPoints[i][j].y;
+		colorValue[i] += Scalar(bilateralFilteredImg.at<Vec3b>(x, y)[0], bilateralFilteredImg.at<Vec3b>(x, y)[1], bilateralFilteredImg.at<Vec3b>(x, y)[2]);
+		colorHSVValue[i] += Scalar(colorHSV.at<Vec3b>(x, y)[0], colorHSV.at<Vec3b>(x, y)[1], colorHSV.at<Vec3b>(x, y)[2]);
+		colorTransformValue[i] += Scalar(colorTransform.at<Vec3b>(x, y)[0], colorTransform.at<Vec3b>(x, y)[1], colorTransform.at<Vec3b>(x, y)[2]);
+	}
+
+
+	for (int i = 0; i < regionNum; i++){
+		int pixNum = separateRegionPoints[i].size();
+		colorValue[i] /= pixNum;
+		colorTransformValue[i] /= pixNum;
+		colorHSVValue[i] /= pixNum;
+		//cout << colorValue[i] << endl;
+	}
+
+
+	// Recover origin average color
+	for (int i = 0; i < separateRegionPoints.size(); i++){
+		Scalar color = colorValue[i];
+		for (int j = 0; j < separateRegionPoints[i].size(); j++){
+			int x = separateRegionPoints[i][j].x;
+			int y = separateRegionPoints[i][j].y;
+			originColorImg.at<Vec3b>(x, y) = Vec3b(color[0], color[1], color[2]);
+			separateRegions[i].at<Vec3b>(x, y) = Vec3b(color[0], color[1], color[2]);
+		}
+		separateRegionsBlack.push_back(FindLargestRegion(separateRegions[i]));
+	}
+	// Background Removal
+	colorValue.erase(colorValue.begin());
+	colorTransformValue.erase(colorTransformValue.begin());
+	colorHSVValue.erase(colorHSVValue.begin());
+	separateRegions.erase(separateRegions.begin());
+	separateRegionsBlack.erase(separateRegionsBlack.begin());
+
+	imwrite("fillRegions/OriginColorSegment.jpg", originColorImg);
+
+	namedWindow("Register Color Image", CV_WINDOW_AUTOSIZE);
+	createTrackbar("Scaling Threshold1", "Register Color Image", &s1, 100, ColorSeparateThreshold);
+	createTrackbar("Scaling Threshold2", "Register Color Image", &s2, 100, ColorSeparateThreshold);
+	createTrackbar("Scaling Threshold3", "Register Color Image", &s3, 100, ColorSeparateThreshold);
+	createTrackbar("Comparing Threshold: ", "Register Color Image", &compareRatio, 100, ColorSeparateThreshold);
+	createTrackbar("LCHScale Threshold: ", "Register Color Image", &LCHScale, 10000, ColorSeparateThreshold);
+	ColorSeparateThreshold(0, 0);
+	waitKey(0);
+	cvDestroyAllWindows();
+	// Color Recovery
+	for (int i = 0; i < colorIndexes.size(); i++){
 		if (colorIndexes[i].size() > 0){
 			string fileName = outputFileName("fillRegions/fill", i + 1, ".jpg");
 			imwrite(fileName, fillRegions[i]);
 		}
 	}
-	
-	imshow("Origin Color Image", originColorImg);
-	imshow("Register Color Image", colorSegment); waitKey(0);
+
 	imwrite("fillRegions/RegistrationColorSegment.jpg", colorSegment);
 }
 
@@ -441,7 +463,7 @@ void ColorDefinement(){
 		}
 		RGBColor << colorValue[i][0] << " " << colorValue[i][1] << " " << colorValue[i][2] << endl;
 		TransformColor << colorTransformValue[i][0] << " " << colorTransformValue[i][1] << " " << colorTransformValue[i][2] << endl;
-		string fileName = outputFileName("Color Palette/color", i , ".jpg");
+		string fileName = outputFileName("Color Palette/color", i, ".jpg");
 		imwrite(fileName, fillRegions[i]);
 	}
 	RGBColor.close();
