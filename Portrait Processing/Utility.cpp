@@ -185,6 +185,43 @@ void ConnectedComponent(const Mat img, vector<vector<Point2i>>& blobs){
 	imwrite("label.jpg", labelImage);
 	sort(blobs.begin(), blobs.end(), CompareLength);
 }
+
+Mat FindLargestRegion(const Mat img){
+	Mat grayImg;
+	cvtColor(img, grayImg, CV_BGR2GRAY);
+	Mat binaryImg = grayImg < 250;
+	threshold(binaryImg, binaryImg, 0.0, 1.0, THRESH_BINARY);
+
+	Mat labelImage;
+	vector<vector<Point2i>> blobs;
+	FindBlobs(binaryImg, blobs, labelImage);
+	sort(blobs.begin(), blobs.end(), CompareLength);
+
+	Mat largestArea = Mat(img.size(), CV_8UC1);
+	largestArea.setTo(0);
+	for (int i = 0; i < blobs[0].size(); i++){
+		int x = blobs[0][i].x;
+		int y = blobs[0][i].y;
+		largestArea.at<uchar>(y, x) = 255;
+	}
+	//imshow("", largestArea); waitKey(0);
+	return largestArea;
+}
+int ConnectedComponentNumber(const Mat region1, const Mat region2){
+	
+	Mat binary1,binary2,binary;
+	
+	threshold(region1, binary1, 0.0, 1.0, THRESH_BINARY);
+	threshold(region2, binary2, 0.0, 1.0, THRESH_BINARY);
+
+	binary = binary1 + binary2;
+	Mat labelImage;
+	vector<vector<Point2i>> blobs;
+	FindBlobs(binary, blobs, labelImage);
+	//imshow("", region1 + region2); waitKey(0);
+	
+	return blobs.size();
+}
 void FindBlobs(const Mat &binary, vector < vector<Point2i> > &blobs, Mat &labelImage)
 {
 	blobs.clear();

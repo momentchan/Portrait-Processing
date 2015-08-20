@@ -16,7 +16,7 @@ bool turn = false;
 
 void DrawSimulation(){
 	humanPortrait = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
-	FillSimulation();
+	//FillSimulation();
 	SketchSimulation();
 	imwrite("SimulationResult.jpg", humanPortrait);
 }

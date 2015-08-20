@@ -5,6 +5,7 @@ extern Mat colorSegment;
 
 vector <vector<Point>> separateRegionPoints;
 vector <Mat> separateRegions;
+vector <Mat> separateRegionsBlack;
 vector <Mat> fillRegions;
 vector<Scalar> colorValue;
 vector<Scalar> colorPaletteRGB;
@@ -12,7 +13,7 @@ vector<Scalar> colorPaletteTransform;
 vector<vector<int>> colorIndexes;
 
 bool selfPick = false;
-int colorSpace = CV_BGR2YUV;
+int colorSpace = CV_BGR2Lab;
 
 void ColorRefinement(Mat & src){
 	int morph_elem = 0;
@@ -36,7 +37,7 @@ vector<string> split(string str, char delimiter) {
 	return internal;
 }
 void ColorRead(){
-	ifstream RGBData("Color Palette/colorDefineRGB.txt");
+	ifstream RGBData("Color Palette/colorDefineBGR.txt");
 	ifstream TransformData;
 	if (colorSpace== CV_BGR2Lab)
 		TransformData.open("Color Palette/colorDefineLAB.txt");
@@ -48,6 +49,8 @@ void ColorRead(){
 		TransformData.open("Color Palette/colorDefineXYZ.txt");
 	else if (colorSpace == CV_BGR2HSV)
 		TransformData.open("Color Palette/colorDefineHSV.txt");
+	else if (colorSpace == CV_BGR2RGB)
+		TransformData.open("Color Palette/colorDefineRGB.txt");
 	string str;
 	while (getline(RGBData, str))
 	{
@@ -112,18 +115,40 @@ void XYZtoLab(Scalar & xyz){
 	float b = 200 * (f(x) - f(y));
 	xyz = Scalar(L,a,b);
 }
+void RGBtoLCH(Scalar & rgb){
+	float r = rgb[0];
+	float g = rgb[1];
+	float b = rgb[2];
+
+
+	float alpha = min(min(r, g), b) / max(max(r, g), b) / 100.0;
+	float Q = exp(alpha*3.0);
+	float L = (Q*max(max(r, g), b) + (1 - Q)*min(min(r, g), b))/2;
+	float C = Q*(abs(r - g) + abs(g - b) + abs(b - r)) / 3;
+	float H = atan((g - b) / (r - g));
+	if (r - g < 0 && g - b >= 0) H += 180;
+	if (r - g < 0 && g - b < 0) H -= 180;
+
+	rgb[0] = L;
+	rgb[1] = C;
+	rgb[2] = H;
+
+}
+
+
 bool ColorDifferenceCompare(pair <int, double> c1, pair <int, double> c2) {
 	double i = c1.second;
 	double j = c2.second;
 	return (i < j);
 }
 float DeltaFunction(Scalar lab1, Scalar lab2){
+
 	float l1 = lab1[0];  float l2 = lab2[0];
 	float a1 = lab1[1];  float a2 = lab2[1];
 	float b1 = lab1[2];  float b2 = lab2[2];
 
-	float xC1 = sqrt(pow(a1,2) + pow(b1,2));
-	float xC2 = sqrt(pow(a2,2) + pow(b2,2));
+	float xC1 = sqrt(pow(a1, 2) + pow(b1, 2));
+	float xC2 = sqrt(pow(a2, 2) + pow(b2, 2));
 	float xDL = l2 - l1;
 	float xDC = xC2 - xC1;
 	float xDE = sqrt(((l1 - l2) * (l1 - l2)) + ((a1 - a2) * (a1 - a2)) + ((b1 - b2) * (b1 - b2)));
@@ -138,11 +163,27 @@ float DeltaFunction(Scalar lab1, Scalar lab2){
 	float xSH = 1 + (0.015 * xC1);
 	xDC /= xSC;
 	xDH /= xSH;
-	float delta = sqrt(pow(xDL,2) + pow(xDC,2) + pow(xDH,2));
+	float delta = sqrt(pow(xDL, 2) + pow(xDC, 2) + pow(xDH, 2));
 	return delta;
+}
+float DeltaLCHFunction(Scalar LCH1, Scalar LCH2){
+
+	float l1 = LCH1[0];  float l2 = LCH2[0];
+	float c1 = LCH1[1];  float c2 = LCH2[1];
+	float h1 = LCH1[2];  float h2 = LCH2[2];
+
+	float dl = l1 - l2;
+	float dh = h1 - h2;
+
+	float dLCH = sqrt(pow(1.4456*dl, 2) + 1.4456*(c1*c1 + c2*c2 - 2 * c1*c2*cos(dh)));
+
+
+	
+	return dLCH;
 }
 void ColorRegistration(Scalar & color, int regionIndex){
 	vector<pair <int, double>> differenceArray;
+	//RGBtoLCH(color);
 
 	int colorIndex = 0;
 	if (selfPick){
@@ -156,16 +197,50 @@ void ColorRegistration(Scalar & color, int regionIndex){
 		float minDistance = INFINITY;
 		for (int i = 0; i < colorPaletteTransform.size(); i++){
 			Scalar colorMatch = colorPaletteTransform[i];
-			float distance = norm(Scalar((color[0] - colorMatch[0])*0.5,color[1] - colorMatch[1], color[2] - colorMatch[2]));// DeltaFunction(color, colorMatch);// 
+			//RGBtoLCH(colorMatch);
+			
+
+			float distance = norm(Scalar((color[0] - colorMatch[0]), color[1] - colorMatch[1], color[2] - colorMatch[2]));//DeltaLCHFunction(color, colorMatch);// 
 			differenceArray.push_back(make_pair(i, distance));
 			sort(differenceArray.begin(), differenceArray.end(), ColorDifferenceCompare);
 		}
 		for (int i = 0; i < differenceArray.size(); i++){
 			colorIndex = differenceArray[i].first;
-			if (colorIndexes[colorIndex].size() < 3){
+			// no area have used this color
+			if (colorIndexes[colorIndex].size() == 0){
 				color = colorPaletteRGB[colorIndex];
 				colorIndexes[colorIndex].push_back(regionIndex);
 				break;
+			}
+			// more than one area use this color
+			else{
+				bool insertible = true;
+				for (int i = 0; i < colorIndexes[colorIndex].size(); i++){
+					int CCNum = 0;
+					CCNum = ConnectedComponentNumber(separateRegionsBlack[regionIndex], separateRegionsBlack[colorIndexes[colorIndex][i]]);
+					//cout << CCNum << endl;
+
+					// this two color is adjacent to each other
+					if (CCNum == 1){
+						// if the second option is too bad
+						/*insertible = false;
+						break;*/
+						if (differenceArray[i].second/differenceArray[i + 1].second<0.4){
+							insertible = true;
+							break;
+						}
+						else{
+							insertible = false;
+							break;
+						}
+						
+					}
+				}
+				if (insertible == true){
+					color = colorPaletteRGB[colorIndex];
+					colorIndexes[colorIndex].push_back(regionIndex);
+					break;
+				}
 			}
 		}
 	}
@@ -228,6 +303,7 @@ void ColorSeparation(){
 		int pixNum = separateRegionPoints[i].size();
 		colorValue[i] /= pixNum;
 		colorTransformValue[i] /= pixNum;
+		//cout << colorValue[i] << endl;
 	}
 
 
@@ -240,14 +316,16 @@ void ColorSeparation(){
 			originColorImg.at<Vec3b>(x, y) = Vec3b(color[0], color[1], color[2]);
 			separateRegions[i].at<Vec3b>(x, y) = Vec3b(color[0], color[1], color[2]);
 		}
-		//imshow("", separateRegions[i]); waitKey(0);
+		separateRegionsBlack.push_back(FindLargestRegion(separateRegions[i]));
 	}
 	// Background Removal
 	colorValue.erase(colorValue.begin());
 	colorTransformValue.erase(colorTransformValue.begin());
 	separateRegions.erase(separateRegions.begin());
+	separateRegionsBlack.erase(separateRegionsBlack.begin());
 
-	
+	//for (int i = 0; i < separateRegionsBlack.size(); i++)
+		//cout << ConnectedComponentNumber(separateRegionsBlack[0], separateRegionsBlack[i]);
 	imwrite("fillRegions/OriginColorSegment.jpg", originColorImg);
 	for (int i = 0; i < separateRegions.size(); i++){
 		ColorRegistration(colorTransformValue[i], i);
@@ -334,7 +412,7 @@ void ColorDefinement(){
 	// Color Recovery
 	ofstream RGBColor;
 	ofstream TransformColor;
-	RGBColor.open("Color Palette/colorDefineRGB.txt");
+	RGBColor.open("Color Palette/colorDefineBGR.txt");
 	if (colorSpace == CV_BGR2Lab)
 		TransformColor.open("Color Palette/colorDefineLAB.txt");
 	else if (colorSpace == CV_BGR2YCrCb)
@@ -345,9 +423,11 @@ void ColorDefinement(){
 		TransformColor.open("Color Palette/colorDefineXYZ.txt");
 	else if (colorSpace == CV_BGR2HSV)
 		TransformColor.open("Color Palette/colorDefineHSV.txt");
+	else if (colorSpace == CV_BGR2RGB)
+		TransformColor.open("Color Palette/colorDefineRGB.txt");
 
 	// Color Recovery
-	for (int i = 1; i < fillRegions.size(); i++){
+	for (int i = 0; i < fillRegions.size(); i++){
 		Mat grayImg;
 		cvtColor(fillRegions[i], grayImg, CV_RGB2GRAY);
 		Mat binaryImg = grayImg < 128;

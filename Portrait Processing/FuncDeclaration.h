@@ -37,7 +37,8 @@ Rect BoundingBox(Mat);
 Mat HoleFilling(Mat);
 string int2str(int &i);
 string outputFileName(string, int,string);
-
+int ConnectedComponentNumber(const Mat, const Mat);
+Mat FindLargestRegion(const Mat img);
 
 int ContourSmooth();
 void ColorSeparation();
