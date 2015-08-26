@@ -1,36 +1,18 @@
-﻿Build started 2015/8/20 下午 06:24:32.
+﻿Build started 2015/8/26 上午 10:15:43.
      1>Project "C:\Users\Fred\Dropbox\Portrait-Processing\Portrait Processing\Portrait Processing.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\opencv\build\x64\vc12\..\..\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt ColorSeparation.cpp
-         ColorSeparation.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /IC:\opencv\build\x64\vc12\..\..\include /Zi /nologo /W3 /WX- /sdl /Od /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt Utility.cpp
+         Utility.cpp
      1>C:\opencv\build\include\opencv2/core/mat.hpp(1413): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
-     1>ColorSeparation.cpp(95): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(96): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(97): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(100): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(101): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(122): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(123): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(124): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(138): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(139): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(147): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(148): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(149): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(154): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(163): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
-     1>ColorSeparation.cpp(179): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(194): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>ColorSeparation.cpp(267): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
-     1>ColorSeparation.cpp(269): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
-     1>ColorSeparation.cpp(337): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
-     1>ColorSeparation.cpp(351): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
-     1>ColorSeparation.cpp(352): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
-     1>ColorSeparation.cpp(461): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
-     1>ColorSeparation.cpp(462): warning C4244: 'argument' : conversion from 'double' to 'uchar', possible loss of data
-     1>c:\users\fred\dropbox\portrait-processing\portrait processing\colorseparation.cpp(176): warning C4756: overflow in constant arithmetic
-     1>c:\users\fred\dropbox\portrait-processing\portrait processing\colorseparation.cpp(184): warning C4756: overflow in constant arithmetic
-     1>c:\users\fred\dropbox\portrait-processing\portrait processing\colorseparation.cpp(176): warning C4756: overflow in constant arithmetic
+     1>Utility.cpp(13): warning C4244: 'initializing' : conversion from 'unsigned __int64' to 'double', possible loss of data
+     1>Utility.cpp(14): warning C4244: 'initializing' : conversion from 'unsigned __int64' to 'double', possible loss of data
+     1>Utility.cpp(45): warning C4244: 'initializing' : conversion from 'float' to 'int', possible loss of data
+     1>Utility.cpp(70): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>Utility.cpp(112): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
+     1>Utility.cpp(118): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>Utility.cpp(126): warning C4267: 'initializing' : conversion from 'size_t' to 'int', possible loss of data
+     1>Utility.cpp(170): warning C4309: '=' : truncation of constant value
+     1>Utility.cpp(239): warning C4267: 'return' : conversion from 'size_t' to 'int', possible loss of data
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\opencv\build\x64\vc12\lib opencv_ts300d.lib opencv_world300d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.lib" /MACHINE:X64 x64\Debug\CoherentLineDrawing.obj
          x64\Debug\ColorSeparation.obj
@@ -38,11 +20,13 @@
          x64\Debug\FaceDetection.obj
          x64\Debug\Main.obj
          x64\Debug\MeanShift.obj
+         x64\Debug\ShadowGeneration.obj
          x64\Debug\Simulation.obj
          x64\Debug\Utility.obj
+     1>CoherentLineDrawing.obj : warning LNK4099: PDB 'vc120.pdb' was not found with 'CoherentLineDrawing.obj' or at 'C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\vc120.pdb'; linking object as if no debug info
          Portrait Processing.vcxproj -> C:\Users\Fred\Dropbox\Portrait-Processing\x64\Debug\Portrait Processing.exe
      1>Done Building Project "C:\Users\Fred\Dropbox\Portrait-Processing\Portrait Processing\Portrait Processing.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.74
+Time Elapsed 00:00:04.45

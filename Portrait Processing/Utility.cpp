@@ -182,7 +182,7 @@ void ConnectedComponent(const Mat img, vector<vector<Point2i>>& blobs){
 	Mat labelImage;
 	threshold(~img, binary, 0.0, 1.0, THRESH_BINARY);
 	FindBlobs(binary, blobs, labelImage);
-	imwrite("label.jpg", labelImage);
+	//imwrite("label.jpg", labelImage);
 	sort(blobs.begin(), blobs.end(), CompareLength);
 }
 
@@ -207,6 +207,22 @@ Mat FindLargestRegion(const Mat img){
 	//imshow("", largestArea); waitKey(0);
 	return largestArea;
 }
+
+void imageRefinement(Mat & src){
+	int morph_elem = 0;
+	int morph_size = 2;
+	int open_operator = 2;
+	int close_operator = 3;
+
+	Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
+	// Apply the specified morphology operation
+	morphologyEx(src, src, close_operator, element);
+	//morphologyEx(src, src, open_operator, element);
+	//morphologyEx(src, src, open_operator, element);
+	imshow("Refinement", src); waitKey(0);
+	destroyWindow("Refinement");
+}
+
 int ConnectedComponentNumber(const Mat region1, const Mat region2){
 	
 	Mat binary1,binary2,binary;

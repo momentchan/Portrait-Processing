@@ -28,17 +28,17 @@ int main(int argc, const char** argv)
 		ColorDefinement();
 	}
 	else{
-	colorImg = imread("colorImg.jpg");
+		colorImg = imread("colorImg3.jpg");
 	
-	cvtColor(colorImg, grayImg, CV_RGB2GRAY);
-	faceCenter = Point2f(200, 200);
-	ContourExtraction();
+		cvtColor(colorImg, grayImg, CV_RGB2GRAY);
+		faceCenter = Point2f(200, 200);
+		ContourExtraction();
 	
-	ColorSeparation();
-	
-	DrawSimulation();
+		ColorSeparation();
+		ShadowGeneration();
+		DrawSimulation();
 
-	////////Translation
+		////////Translation
 	}
 }
 

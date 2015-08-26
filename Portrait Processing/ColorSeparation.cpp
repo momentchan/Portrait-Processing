@@ -24,18 +24,7 @@ Mat originColorImg;
 vector<Scalar> colorTransformValue;
 vector<Scalar> colorHSVValue;
 
-void ColorRefinement(Mat & src){
-	int morph_elem = 0;
-	int morph_size = 2;
-	int open_operator = 2;
-	int close_operator = 3;
 
-	Mat element = getStructuringElement(morph_elem, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
-	// Apply the specified morphology operation
-	morphologyEx(src, src, close_operator, element);
-	morphologyEx(src, src, open_operator, element);
-	morphologyEx(src, src, open_operator, element);
-}
 vector<string> split(string str, char delimiter) {
 	vector<string> internal;
 	stringstream ss(str); // Turn the string into a stream.
@@ -374,7 +363,7 @@ void ColorSeparation(){
 	// Color Recovery
 	for (int i = 0; i < colorIndexes.size(); i++){
 		if (colorIndexes[i].size() > 0){
-			string fileName = outputFileName("fillRegions/fill", i + 1, ".jpg");
+			string fileName = outputFileName("fillRegions/fill", i, ".jpg");
 			imwrite(fileName, fillRegions[i]);
 		}
 	}

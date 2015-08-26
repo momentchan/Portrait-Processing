@@ -1,15 +1,17 @@
 #include "FuncDeclaration.h"
 
 extern Mat colorImg;
+extern Mat shadowImg;
 extern Mat colorSegment;
+
 extern vector <Scalar> colorValue;
 extern vector<Scalar> colorPaletteRGB;
 extern vector <Mat> fillRegions;
 extern vector<vector<Point> > filteredContours;
 extern vector<vector<int>> colorIndexes;
 
+
 Mat humanPortrait;
-vector < vector<Point2i > > blobs;
 
 int fillLines = 0;
 bool turn = false;
@@ -18,6 +20,7 @@ void DrawSimulation(){
 	humanPortrait = Mat(colorImg.size(), CV_8UC3, Scalar(255, 255, 255));
 	FillSimulation();
 	SketchSimulation();
+	ShadowSimulation();
 	imwrite("SimulationResult.jpg", humanPortrait);
 }
 void SketchSimulation(){
@@ -68,7 +71,7 @@ void FillSimulation(){
 			//int gap = rows*0.01;
 			//if (gap < 3) gap = 3;
 			int gap = 5;
-
+			int lineWidth = 3;
 			ofstream outputFile;
 			string fileName = outputFileName("drawPoints/fill", fillRegionsNum, ".txt");
 			outputFile.open(fileName);
@@ -81,10 +84,10 @@ void FillSimulation(){
 			//outputFile << colorIndexes[i] << endl;
 			// Find draw points
 			for (int j = ys; j <= ye; j = j + gap)
-				FindDrawPoints(j, xs, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
+				FindDrawPoints(j, xs, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint, lineWidth);
 			// Last Row
 			for (int k = xs; k <= xe; k = k + gap)
-				FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint);
+				FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint, lineWidth);
 			outputFile.close();
 
 			fillRegionsNum++;
@@ -94,7 +97,61 @@ void FillSimulation(){
 	waitKey(0);
 }
 
-void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, ofstream & outputFile, float size, Vec3b fillColor, Point & previousPoint){
+void ShadowSimulation(){
+	fillLines = 0;
+	imageRefinement(shadowImg);
+	vector<vector<Point2i>> blobs;
+	ConnectedComponent(shadowImg, blobs);
+	vector<Mat> shadowRegions;
+	cout << blobs.size() << endl;
+
+	for (int i = 0; i < blobs.size(); i++){
+		//if (blobs[i].size() < 50)break;
+		
+		Mat shadowRegion = Mat(shadowImg.size(), CV_8UC1);
+		shadowRegion.setTo(255);
+		//cout << blobs[i].size() << endl;
+		for (int j = 0; j < blobs[i].size(); j++){
+			int x = blobs[i][j].x;
+			int y = blobs[i][j].y;
+			shadowRegion.at<uchar>(y, x) = 0;
+		}
+		shadowRegions.push_back(shadowRegion);
+		//imshow("", shadowRegion); waitKey(0);
+	}
+
+	for (int i = 1; i < shadowRegions.size(); i++){  // i=1 skip hair
+		// Boundary initialization
+		int ys = 1;
+		int ye = colorImg.rows - 1;
+		int xs = 1;
+		int xe = colorImg.cols - 1;
+	
+		float size = 0;
+		int gap = 6;
+		int lineWidth = 1;
+		ofstream outputFile;
+		string fileName = outputFileName("drawPoints/shadow", i, ".txt");
+		outputFile.open(fileName);
+		Point previousPoint;
+		Vec3b fillColor = Vec3b(40, 40, 40);// 52.5873, 87.5418, 111.205); // color39
+		
+		// Find draw points
+		for (int j = ys; j <= ye; j = j + gap)
+			FindDrawPoints(j, xs, ys, xe, shadowRegions[i], humanPortrait, outputFile, size, fillColor, previousPoint, lineWidth);
+		// Last Row
+		for (int k = xs; k <= xe; k = k + gap)
+			FindDrawPoints(ye, k, ys, xe, shadowRegions[i], humanPortrait, outputFile, size, fillColor, previousPoint, lineWidth);
+		outputFile.close();
+
+	}
+	cout << "\nTotal Number of fill lines: " << fillLines << endl << endl;
+	waitKey(0);
+}
+
+
+
+void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, ofstream & outputFile, float size, Vec3b fillColor, Point & previousPoint, int lineWidth){
 	vector<Point> points;
 	bool cross = true;
 
@@ -126,7 +183,7 @@ void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, o
 		{
 			//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
 			
-			line(fill, points[2 * i], points[2 * i + 1], fillColor, 3);
+			line(fill, points[2 * i], points[2 * i + 1], fillColor, lineWidth);
 			previousPoint = points[2 * i + 1];
 			outputFile << points[2 * i].x << " " << points[2 * i].y << " " << points[2 * i + 1].x << " " << points[2 * i + 1].y << endl;
 			fillLines++;
@@ -139,7 +196,7 @@ void FindDrawPoints(int y, int x, int ys, int xe, Mat fill_region, Mat & fill, o
 		if (norm(points[2 * i] - points[2 * i + 1]) > size*0.05)
 		{
 			//cout <<size<<" "<< norm(points[2 * i] - points[2 * i + 1]) << endl;
-			line(fill, points[2 * i + 1], points[2 * i], fillColor, 3);
+			line(fill, points[2 * i + 1], points[2 * i], fillColor, lineWidth);
 			previousPoint = points[2 * i];
 			outputFile << points[2 * i + 1].x << " " << points[2 * i + 1].y << " " << points[2 * i].x << " " << points[2 * i].y << endl;
 			fillLines++;

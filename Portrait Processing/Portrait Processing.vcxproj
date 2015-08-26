@@ -165,6 +165,7 @@
     <ClCompile Include="FaceDetection.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MeanShift.cpp" />
+    <ClCompile Include="ShadowGeneration.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Utility.cpp" />
   </ItemGroup>

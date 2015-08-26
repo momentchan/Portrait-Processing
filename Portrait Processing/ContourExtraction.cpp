@@ -57,7 +57,7 @@ void CannyThreshold(int, void*){
 	
 	for (size_t k = 0; k < detectedContours.size(); k++){
 		//cout << detectedContours[k].size() << " ";
-		approxPolyDP(Mat(detectedContours[k]), detectedContours[k], 2, false);
+		approxPolyDP(Mat(detectedContours[k]), detectedContours[k],1, false);
 		//cout << detectedContours[k].size() << endl;
 	}
 	
@@ -74,7 +74,7 @@ void CannyThreshold(int, void*){
 	for (int i = 0; i < detectedContours.size(); i++) {
 		mc[i] = Point2f(mu[i].m10 / mu[i].m00, mu[i].m01 / mu[i].m00);
 		MomentWeights[i] = MWCalculation(mu[i], mc[i]);
-		if (MomentWeights[i]> Ts*0.01)
+		if (MomentWeights[i]> float(Ts)*0.01)
 			filteredContours.push_back(detectedContours[i]);
 	}
 
@@ -87,7 +87,7 @@ void CannyThreshold(int, void*){
 	for (int i = 0; i< detectedContours.size(); i++) {
 		Scalar color = Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255));
 		drawContours(drawOrigin, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
-		if (MomentWeights[i]> Ts*0.01){
+		if (MomentWeights[i]> float(Ts)*0.01){
 			//Color
 			drawContours(drawFiltered, detectedContours, i, color, 1, 8, hierarchy, 2, Point());
 			//Black
@@ -115,7 +115,7 @@ void CannyThreshold(int, void*){
 }
 
 float MWCalculation(Moments mu, Point2f mc){
-	return mu.m00 / norm(Mat(mc), Mat(faceCenter));
+	return mu.m00 / (norm(Mat(mc), Mat(faceCenter))+1);
 }
 
 void  Bspline(vector<Point> &pointSet){

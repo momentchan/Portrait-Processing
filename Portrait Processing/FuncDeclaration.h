@@ -13,19 +13,14 @@ void BranchPointRemoval(Mat &);
 
 
 // Binarization
-int HistogramCalulation(Mat image, Mat &, float);
-void Binarization();
-void Refinement();
-void RefineThreshold(int, void*);
-
-// Separation
-void Separation();
+void ShadowGeneration();
 
 //Simulation
 void DrawSimulation();
 void SketchSimulation();
 void FillSimulation();
-void FindDrawPoints(int, int, int, int, Mat, Mat&, ofstream&, float, Vec3b, Point&);
+void ShadowSimulation();
+void FindDrawPoints(int, int, int, int, Mat, Mat&, ofstream&, float, Vec3b, Point&,int);
 void boundaryInitial(int&, int&, int&, int&, int);
 
 // Utilities
@@ -39,7 +34,11 @@ string int2str(int &i);
 string outputFileName(string, int,string);
 int ConnectedComponentNumber(const Mat, const Mat);
 Mat FindLargestRegion(const Mat img);
+void imageRefinement(Mat &);
+
 
 int ContourSmooth();
 void ColorSeparation();
 void ColorDefinement();
+
+

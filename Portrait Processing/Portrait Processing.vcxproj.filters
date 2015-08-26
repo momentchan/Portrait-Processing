@@ -39,6 +39,9 @@
     <ClCompile Include="ColorSeparation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowGeneration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="haarcascade_frontalface_alt.xml" />
