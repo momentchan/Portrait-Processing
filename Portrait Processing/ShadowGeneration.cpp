@@ -1,10 +1,9 @@
 #include "FuncDeclaration.h"
 extern Mat grayImg;
 extern Point2f faceCenter;
-float alpha = 0.15;
 Mat shadowImg;
 
-int HistogramCalulation(Mat image){
+int HistogramCalulation(Mat image,float alpha){
 	// allcoate memory for no of pixels for each intensity value
 	int histogram[256];
 
@@ -68,11 +67,15 @@ int HistogramCalulation(Mat image){
 
 void ShadowGeneration(){
 	int w = grayImg.cols;
-	int T = HistogramCalulation(grayImg(Rect(faceCenter.x - w / 4, faceCenter.y - w / 4, w / 2, w / 2)));
+	int T1 = HistogramCalulation(grayImg(Rect(faceCenter.x - w / 4, faceCenter.y - w / 4, w / 2, w / 2)),0.20);
+	int T2 = HistogramCalulation(grayImg(Rect(faceCenter.x - w / 4, faceCenter.y - w / 4, w / 2, w / 2)), 0.40);
 	cout << "Shadow generation..." << endl;
-	cout << "Threshold for binarization: " << T << endl << endl;
-	Mat binaryImg;
-	threshold(grayImg, binaryImg, T, 255, CV_THRESH_BINARY);
+	cout << "Threshold for binarization: " << T1<< " "<< T2 << endl << endl;
+	Mat binaryImg,binaryImg1, binaryImg2;
+	threshold(grayImg, binaryImg1, T1, 255, CV_THRESH_BINARY);
+	threshold(grayImg, binaryImg2, T2, 255, CV_THRESH_BINARY);
+	binaryImg = ~binaryImg2 - ~binaryImg1;
+	binaryImg = ~binaryImg;
 	shadowImg = Mat::zeros(grayImg.size(), CV_8U);
 	for (int i = 0; i < binaryImg.cols;i++)
 		for (int j = 0; j < binaryImg.rows; j++){

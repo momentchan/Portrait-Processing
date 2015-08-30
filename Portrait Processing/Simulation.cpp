@@ -90,6 +90,26 @@ void FillSimulation(){
 				FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint, lineWidth);
 			outputFile.close();
 
+
+			// For oid covering
+			gap = 7;
+			fillColor = Vec3b(colorPaletteRGB[i][0], colorPaletteRGB[i][1], colorPaletteRGB[i][2]);//Vec3b(255, 255, 255);//
+			fileName = outputFileName("drawPoints/oil", fillRegionsNum, ".txt");
+			outputFile.open(fileName);
+
+			// Write indexing of color
+			outputFile << i << endl;
+
+			//outputFile << colorIndexes[i] << endl;
+			// Find draw points
+			for (int j = ys; j <= ye; j = j + gap)
+				FindDrawPoints(j, xs, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint, 0);
+			// Last Row
+			for (int k = xs; k <= xe; k = k + gap)
+				FindDrawPoints(ye, k, ys, xe, fillRgionBlack, humanPortrait, outputFile, size, fillColor, previousPoint, 0);
+			outputFile.close();
+
+
 			fillRegionsNum++;
 		}
 	}
@@ -106,7 +126,8 @@ void ShadowSimulation(){
 	cout << blobs.size() << endl;
 
 	for (int i = 0; i < blobs.size(); i++){
-		//if (blobs[i].size() < 50)break;
+		if (blobs[i].size() < 50)
+			break;
 		
 		Mat shadowRegion = Mat(shadowImg.size(), CV_8UC1);
 		shadowRegion.setTo(255);
@@ -120,7 +141,7 @@ void ShadowSimulation(){
 		//imshow("", shadowRegion); waitKey(0);
 	}
 
-	for (int i = 1; i < shadowRegions.size(); i++){  // i=1 skip hair
+	for (int i = 0; i < shadowRegions.size(); i++){  // i=1 skip hair
 		// Boundary initialization
 		int ys = 1;
 		int ye = colorImg.rows - 1;
@@ -128,7 +149,7 @@ void ShadowSimulation(){
 		int xe = colorImg.cols - 1;
 	
 		float size = 0;
-		int gap = 6;
+		int gap = 3;
 		int lineWidth = 1;
 		ofstream outputFile;
 		string fileName = outputFileName("drawPoints/shadow", i, ".txt");

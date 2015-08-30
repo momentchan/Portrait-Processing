@@ -24,7 +24,7 @@ int main(int argc, const char** argv)
 	//	FaceDetection();
 	//system("cls");
 	if (colorDefine){
-		colorImg = imread("color palette small.jpg");
+		colorImg = imread("\Color Palette\picture\color palette small.jpg");
 		ColorDefinement();
 	}
 	else{
